@@ -10,12 +10,6 @@ import (
 	"strings"
 )
 
-type BotConfig struct {
-	EmailAddress string
-	ApiKey       string
-	Streams      []string
-}
-
 func main() {
 	var (
 		emailAddress = flag.String("email", "", "bot email address")
@@ -23,7 +17,7 @@ func main() {
 	)
 	flag.Parse()
 
-	config := BotConfig{
+	bot := Bot{
 		EmailAddress: *emailAddress,
 		ApiKey:       *apiKey,
 		Streams:      []string{"test-bot"},
@@ -43,7 +37,7 @@ func main() {
 		log.Fatal(err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.SetBasicAuth(config.EmailAddress, config.ApiKey)
+	req.SetBasicAuth(bot.EmailAddress, bot.ApiKey)
 
 	resp, err := c.Do(req)
 	if err != nil {
