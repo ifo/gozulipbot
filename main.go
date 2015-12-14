@@ -16,8 +16,12 @@ func main() {
 
 	bot := MakeBot(*emailAddress, *apiKey, []string{"test-bot"})
 
-	resp, err := bot.SendStreamMessage("test-bot", "test-go-bot",
-		"continued progress")
+	/*
+		resp, err := bot.SendStreamMessage("test-bot", "test-go-bot",
+			"continued progress")
+	*/
+
+	resp, err := bot.SendPrivateMessage("email@example.com", "hey")
 	if err != nil {
 		log.Fatal(err)
 	}

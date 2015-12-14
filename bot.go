@@ -41,3 +41,23 @@ func (b Bot) SendStreamMessage(stream, topic, content string) (*http.Response,
 	c := http.Client{}
 	return c.Do(req)
 }
+
+func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
+	// TODO ensure "user" (a.k.a. email) exists, content is non-empty
+	v := url.Values{}
+	v.Set("type", "private")
+	v.Set("to", email)
+	v.Set("content", content)
+
+	req, err := http.NewRequest("POST", "https://api.zulip.com/v1/messages",
+		strings.NewReader(v.Encode()))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.SetBasicAuth(b.EmailAddress, b.ApiKey)
+
+	c := http.Client{}
+	return c.Do(req)
+}
