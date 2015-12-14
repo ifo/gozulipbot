@@ -23,20 +23,10 @@ func MakeBot(email, apikey string, streams []string) Bot {
 func (b Bot) SendStreamMessage(stream, topic, content string) (*http.Response,
 	error) {
 	// TODO ensure stream exists, content is non-empty
-	v := url.Values{}
-	v.Set("type", "stream")
-	v.Set("to", stream)
-	v.Set("subject", topic)
-	v.Set("content", content)
-
-	req, err := http.NewRequest("POST", "https://api.zulip.com/v1/messages",
-		strings.NewReader(v.Encode()))
+	req, err := constructRequest(b, "stream", stream, topic, content)
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.SetBasicAuth(b.EmailAddress, b.ApiKey)
 
 	c := http.Client{}
 	return c.Do(req)
@@ -44,10 +34,24 @@ func (b Bot) SendStreamMessage(stream, topic, content string) (*http.Response,
 
 func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
 	// TODO ensure "user" (a.k.a. email) exists, content is non-empty
+	req, err := constructRequest(b, "private", email, "", content)
+	if err != nil {
+		return nil, err
+	}
+
+	c := http.Client{}
+	return c.Do(req)
+}
+
+func constructRequest(bot Bot, mtype, to, subject, content string) (*http.Request,
+	error) {
 	v := url.Values{}
-	v.Set("type", "private")
-	v.Set("to", email)
+	v.Set("type", mtype)
+	v.Set("to", to)
 	v.Set("content", content)
+	if mtype == "stream" {
+		v.Set("subject", subject)
+	}
 
 	req, err := http.NewRequest("POST", "https://api.zulip.com/v1/messages",
 		strings.NewReader(v.Encode()))
@@ -56,8 +60,7 @@ func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.SetBasicAuth(b.EmailAddress, b.ApiKey)
+	req.SetBasicAuth(bot.EmailAddress, bot.ApiKey)
 
-	c := http.Client{}
-	return c.Do(req)
+	return req, nil
 }
