@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
-	"net/url"
-	"strings"
 )
 
 func main() {
@@ -17,29 +14,10 @@ func main() {
 	)
 	flag.Parse()
 
-	bot := Bot{
-		EmailAddress: *emailAddress,
-		ApiKey:       *apiKey,
-		Streams:      []string{"test-bot"},
-	}
+	bot := MakeBot(*emailAddress, *apiKey, []string{"test-bot"})
 
-	c := http.Client{}
-
-	v := url.Values{}
-	v.Set("type", "stream")
-	v.Set("to", "test-bot")
-	v.Set("subject", "test-go-bot")
-	v.Set("content", "okay now this works")
-
-	req, err := http.NewRequest("POST", "https://api.zulip.com/v1/messages",
-		strings.NewReader(v.Encode()))
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.SetBasicAuth(bot.EmailAddress, bot.ApiKey)
-
-	resp, err := c.Do(req)
+	resp, err := bot.SendStreamMessage("test-bot", "test-go-bot",
+		"continued progress")
 	if err != nil {
 		log.Fatal(err)
 	}
