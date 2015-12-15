@@ -43,8 +43,8 @@ func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
 	return c.Do(req)
 }
 
-func constructRequest(bot Bot, mtype, to, subject, content string) (*http.Request,
-	error) {
+func constructRequest(bot Bot, mtype, to, subject,
+	content string) (*http.Request, error) {
 	v := url.Values{}
 	v.Set("type", mtype)
 	v.Set("to", to)
