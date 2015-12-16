@@ -44,10 +44,9 @@ func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
 	return c.Do(req)
 }
 
-func (b Bot) constructRequest(endpoint string, v url.Values) (*http.Request,
-	error) {
+func (b Bot) constructRequest(endpoint, body string) (*http.Request, error) {
 	url := fmt.Sprintf("https://api.zulip.com/v1/%s", endpoint)
-	req, err := http.NewRequest("POST", url, strings.NewReader(v.Encode()))
+	req, err := http.NewRequest("POST", url, strings.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
@@ -68,5 +67,5 @@ func (b Bot) constructMessageRequest(mtype, to, subject,
 		values.Set("subject", subject)
 	}
 
-	return b.constructRequest("messages", values)
+	return b.constructRequest("messages", values.Encode())
 }
