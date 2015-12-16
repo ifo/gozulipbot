@@ -1,6 +1,7 @@
 package gozulipbot
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -23,7 +24,7 @@ func MakeBot(email, apikey string, streams []string) Bot {
 func (b Bot) SendStreamMessage(stream, topic, content string) (*http.Response,
 	error) {
 	// TODO ensure stream exists, content is non-empty
-	req, err := constructRequest(b, "stream", stream, topic, content)
+	req, err := constructMessageRequest(b, "stream", stream, topic, content)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +35,7 @@ func (b Bot) SendStreamMessage(stream, topic, content string) (*http.Response,
 
 func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
 	// TODO ensure "user" (a.k.a. email) exists, content is non-empty
-	req, err := constructRequest(b, "private", email, "", content)
+	req, err := constructMessageRequest(b, "private", email, "", content)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +44,21 @@ func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
 	return c.Do(req)
 }
 
-func constructRequest(bot Bot, mtype, to, subject,
+func constructRequest(bot Bot, endpoint string, v url.Values) (*http.Request,
+	error) {
+	url := fmt.Sprintf("https://api.zulip.com/v1/%s", endpoint)
+	req, err := http.NewRequest("POST", url, strings.NewReader(v.Encode()))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.SetBasicAuth(bot.EmailAddress, bot.ApiKey)
+
+	return req, nil
+}
+
+func constructMessageRequest(bot Bot, mtype, to, subject,
 	content string) (*http.Request, error) {
 	v := url.Values{}
 	v.Set("type", mtype)
@@ -53,14 +68,5 @@ func constructRequest(bot Bot, mtype, to, subject,
 		v.Set("subject", subject)
 	}
 
-	req, err := http.NewRequest("POST", "https://api.zulip.com/v1/messages",
-		strings.NewReader(v.Encode()))
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.SetBasicAuth(bot.EmailAddress, bot.ApiKey)
-
-	return req, nil
+	return constructRequest(bot, "messages", v)
 }
