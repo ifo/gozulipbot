@@ -1,7 +1,9 @@
 package gozulipbot
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -47,6 +49,66 @@ func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
 
 func (b Bot) GetStreamList() (*http.Response, error) {
 	req, err := b.constructRequest("streams", "GET", "")
+	if err != nil {
+		return nil, err
+	}
+
+	c := http.Client{}
+	return c.Do(req)
+}
+
+type streamJson struct {
+	Msg     string `json:msg`
+	Streams []struct {
+		StreamID    int    `json:stream_id`
+		InviteOnly  bool   `json:invite_only`
+		Description string `json:description`
+		Name        string `json:name`
+	} `json:streams`
+	Result string `json:result`
+}
+
+func (b Bot) GetStreamNameList() ([]string, error) {
+	resp, err := b.GetStreamList()
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var getStreamJson streamJson
+
+	err = json.Unmarshal(body, &getStreamJson)
+	if err != nil {
+		return nil, err
+	}
+
+	var outStreams []string
+
+	for _, stream := range getStreamJson.Streams {
+		outStreams = append(outStreams, stream.Name)
+	}
+
+	return outStreams, nil
+}
+
+func (b Bot) SubscribeToStreams(streams []string) (*http.Response, error) {
+	var toSubStreams []map[string]string
+	for _, name := range streams {
+		toSubStreams = append(toSubStreams, map[string]string{"name": name})
+	}
+
+	bodyBts, err := json.Marshal(toSubStreams)
+	if err != nil {
+		return nil, err
+	}
+
+	body := "subscriptions=" + string(bodyBts)
+
+	req, err := b.constructRequest("users/me/subscriptions", "POST", body)
 	if err != nil {
 		return nil, err
 	}
