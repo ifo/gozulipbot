@@ -48,7 +48,7 @@ func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
 }
 
 func (b Bot) GetStreamList() (*http.Response, error) {
-	req, err := b.constructRequest("streams", "GET", "")
+	req, err := b.constructRequest("GET", "streams", "")
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (b Bot) SubscribeToStreams(streams []string) (*http.Response, error) {
 
 	body := "subscriptions=" + string(bodyBts)
 
-	req, err := b.constructRequest("users/me/subscriptions", "POST", body)
+	req, err := b.constructRequest("POST", "users/me/subscriptions", body)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (b Bot) SubscribeToStreams(streams []string) (*http.Response, error) {
 }
 
 func (b Bot) RegisterEvents() (*http.Response, error) {
-	req, err := b.constructRequest("register", "POST", `event_types=["message"]`)
+	req, err := b.constructRequest("POST", "register", `event_types=["message"]`)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func (b Bot) GetEventsFromQueue(queueID string,
 
 	url := "events?" + values.Encode()
 
-	req, err := b.constructRequest(url, "GET", "")
+	req, err := b.constructRequest("GET", url, "")
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ func (b Bot) GetEventsFromQueue(queueID string,
 	return c.Do(req)
 }
 
-func (b Bot) constructRequest(endpoint, method, body string) (*http.Request,
+func (b Bot) constructRequest(method, endpoint, body string) (*http.Request,
 	error) {
 	url := fmt.Sprintf("https://api.zulip.com/v1/%s", endpoint)
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
@@ -169,5 +169,5 @@ func (b Bot) constructMessageRequest(mtype, to, subject,
 		values.Set("subject", subject)
 	}
 
-	return b.constructRequest("messages", "POST", values.Encode())
+	return b.constructRequest("POST", "messages", values.Encode())
 }
