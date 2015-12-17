@@ -16,12 +16,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	bot := gzb.MakeBot(emailAddress, apiKey, []string{"test-bot"})
-
-	/*
-		resp, err := bot.SendStreamMessage("test-bot", "test-go-bot",
-			"continued progress")
-	*/
+	bot := gzb.MakeBot(emailAddress, apiKey, []string{})
 
 	resp, err := bot.GetStreamList()
 	if err != nil {
