@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -46,6 +47,34 @@ func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
 
 func (b Bot) GetStreamList() (*http.Response, error) {
 	req, err := b.constructRequest("streams", "GET", "")
+	if err != nil {
+		return nil, err
+	}
+
+	c := http.Client{}
+	return c.Do(req)
+}
+
+func (b Bot) RegisterEvents() (*http.Response, error) {
+	req, err := b.constructRequest("register", "POST", `event_types=["message"]`)
+	if err != nil {
+		return nil, err
+	}
+
+	c := http.Client{}
+	return c.Do(req)
+}
+
+func (b Bot) GetEventsFromQueue(queueID string,
+	lastMessageID int) (*http.Response, error) {
+
+	values := url.Values{}
+	values.Set("queue_id", queueID)
+	values.Set("last_event_id", strconv.Itoa(lastMessageID))
+
+	url := "events?" + values.Encode()
+
+	req, err := b.constructRequest(url, "GET", "")
 	if err != nil {
 		return nil, err
 	}
