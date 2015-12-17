@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -16,8 +18,12 @@ func main() {
 
 	bot := gzb.MakeBot(emailAddress, apiKey, []string{"test-bot"})
 
-	resp, err := bot.SendStreamMessage("test-bot", "test-go-bot",
-		"continued progress")
+	/*
+		resp, err := bot.SendStreamMessage("test-bot", "test-go-bot",
+			"continued progress")
+	*/
+
+	resp, err := bot.GetStreamList()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,6 +32,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	var toPrint bytes.Buffer
 
-	fmt.Println(string(body))
+	err = json.Indent(&toPrint, body, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(toPrint.String())
 }

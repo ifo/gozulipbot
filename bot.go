@@ -44,9 +44,20 @@ func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
 	return c.Do(req)
 }
 
-func (b Bot) constructRequest(endpoint, body string) (*http.Request, error) {
+func (b Bot) GetStreamList() (*http.Response, error) {
+	req, err := b.constructRequest("streams", "GET", "")
+	if err != nil {
+		return nil, err
+	}
+
+	c := http.Client{}
+	return c.Do(req)
+}
+
+func (b Bot) constructRequest(endpoint, method, body string) (*http.Request,
+	error) {
 	url := fmt.Sprintf("https://api.zulip.com/v1/%s", endpoint)
-	req, err := http.NewRequest("POST", url, strings.NewReader(body))
+	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
@@ -67,5 +78,5 @@ func (b Bot) constructMessageRequest(mtype, to, subject,
 		values.Set("subject", subject)
 	}
 
-	return b.constructRequest("messages", values.Encode())
+	return b.constructRequest("messages", "POST", values.Encode())
 }
