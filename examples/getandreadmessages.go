@@ -45,18 +45,18 @@ func main() {
 func registerEvents(bot gzb.Bot) bytes.Buffer {
 	resp, err := bot.RegisterEvents()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("register events error 1: ", err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("register events error 2: ", err)
 	}
 
 	var out bytes.Buffer
 	err = json.Indent(&out, body, "", "  ")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("register events error 3: ", err)
 	}
 
 	return out
