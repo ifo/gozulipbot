@@ -25,7 +25,7 @@ type EventMessage struct {
 }
 
 type DisplayRecipient struct {
-	User  []User `json:"users,omitempty"`
+	Users []User `json:"users,omitempty"`
 	Topic string `json:"topic,omitempty"`
 }
 
@@ -45,7 +45,7 @@ func (d *DisplayRecipient) UnmarshalJSON(b []byte) (err error) {
 		return
 	}
 	if err = json.Unmarshal(b, &users); err == nil {
-		d.User = users
+		d.Users = users
 		return
 	}
 	return
