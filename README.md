@@ -13,7 +13,7 @@ Make sure to add `gozulipbot` to your imports:
 
 ```go
 import (
-  gzb github.com/ifo/gozulipbot
+  gzb "github.com/ifo/gozulipbot"
 )
 ```
 
