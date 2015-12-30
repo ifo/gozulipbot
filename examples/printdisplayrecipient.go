@@ -44,16 +44,7 @@ func main() {
 
 	// print all the display recipients
 	for _, m := range msg {
-		str, rec, err := gzb.GetDisplayRecipient(m)
-		if err != nil {
-			fmt.Println(err)
-		}
-		if str != "" {
-			fmt.Printf("DisplayRecipient was a string: %s\n", str)
-		}
-		if rec != nil {
-			fmt.Printf("DisplayRecipient was an array of JSON objects: %v\n", rec)
-		}
+		fmt.Println(m.DisplayRecipient)
 	}
 }
 

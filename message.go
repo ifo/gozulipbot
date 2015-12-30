@@ -5,32 +5,50 @@ import (
 )
 
 type EventMessage struct {
-	AvatarURL        string          `json:"avatar_url"`
-	Client           string          `json:"client"`
-	Content          string          `json:"content"`
-	ContentType      string          `json:"content_type"`
-	DisplayRecipient json.RawMessage `json:"display_recipient"`
-	GravatarHash     string          `json:"gravatar_hash"`
-	ID               int             `json:"id"`
-	RecipientID      int             `json:"recipient_id"`
-	SenderDomain     string          `json:"sender_domain"`
-	SenderEmail      string          `json:"sender_email"`
-	SenderFullName   string          `json:"sender_full_name"`
-	SenderID         int             `json:"sender_id"`
-	SenderShortName  string          `json:"sender_short_name"`
-	Subject          string          `json:"subject"`
-	SubjectLinks     []interface{}   `json:"subject_links"`
-	Timestamp        int             `json:"timestamp"`
-	Type             string          `json:"type"`
+	AvatarURL        string           `json:"avatar_url"`
+	Client           string           `json:"client"`
+	Content          string           `json:"content"`
+	ContentType      string           `json:"content_type"`
+	DisplayRecipient DisplayRecipient `json:"display_recipient"`
+	GravatarHash     string           `json:"gravatar_hash"`
+	ID               int              `json:"id"`
+	RecipientID      int              `json:"recipient_id"`
+	SenderDomain     string           `json:"sender_domain"`
+	SenderEmail      string           `json:"sender_email"`
+	SenderFullName   string           `json:"sender_full_name"`
+	SenderID         int              `json:"sender_id"`
+	SenderShortName  string           `json:"sender_short_name"`
+	Subject          string           `json:"subject"`
+	SubjectLinks     []interface{}    `json:"subject_links"`
+	Timestamp        int              `json:"timestamp"`
+	Type             string           `json:"type"`
 }
 
 type DisplayRecipient struct {
+	User  []User `json:"users,omitempty"`
+	Topic string `json:"topic,omitempty"`
+}
+
+type User struct {
 	Domain        string `json:"domain"`
 	Email         string `json:"email"`
 	FullName      string `json:"full_name"`
 	ID            int    `json:"id"`
 	IsMirrorDummy bool   `json:"is_mirror_dummy"`
 	ShortName     string `json:"short_name"`
+}
+
+func (d *DisplayRecipient) UnmarshalJSON(b []byte) (err error) {
+	topic, users := "", make([]User, 1)
+	if err = json.Unmarshal(b, &topic); err == nil {
+		d.Topic = topic
+		return
+	}
+	if err = json.Unmarshal(b, &users); err == nil {
+		d.User = users
+		return
+	}
+	return
 }
 
 func ParseEventMessages(rawEventResponse []byte) ([]EventMessage, error) {
@@ -58,24 +76,4 @@ func ParseEventMessages(rawEventResponse []byte) ([]EventMessage, error) {
 	}
 
 	return messages, nil
-}
-
-func GetDisplayRecipient(message EventMessage) (string, []DisplayRecipient,
-	error) {
-
-	var recstr string
-	err := json.Unmarshal(message.DisplayRecipient, &recstr)
-	if err == nil {
-		return recstr, nil, nil
-	}
-	if err, ok := err.(*json.UnmarshalTypeError); !ok {
-		return "", nil, err
-	}
-
-	var rs []DisplayRecipient
-	err = json.Unmarshal(message.DisplayRecipient, &rs)
-	if err != nil {
-		return "", nil, err
-	}
-	return "", rs, nil
 }
