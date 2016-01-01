@@ -129,7 +129,6 @@ func (b Bot) RegisterEvents() (*http.Response, error) {
 
 func (b Bot) GetEventsFromQueue(queueID string,
 	lastMessageID int) (*http.Response, error) {
-
 	values := url.Values{}
 	values.Set("queue_id", queueID)
 	values.Set("last_event_id", strconv.Itoa(lastMessageID))
@@ -143,6 +142,29 @@ func (b Bot) GetEventsFromQueue(queueID string,
 
 	c := http.Client{}
 	return c.Do(req)
+}
+
+func (b Bot) RespondToMessage(e EventMessage, response string) (*http.Response,
+	error) {
+	if response == "" {
+		return nil, fmt.Errorf("Message response cannot be blank")
+	}
+	if e.DisplayRecipient.Topic != "" {
+		return b.SendStreamMessage(e.DisplayRecipient.Topic, e.Subject, response)
+	}
+	// TODO handle multiple users in a private message
+	if e.Subject == "" {
+		return b.SendPrivateMessage(e.SenderEmail, response)
+	}
+	return nil, fmt.Errorf("EventMessage is not understood: %v\n", e)
+}
+
+func (b Bot) RespondToMessagePrivately(e EventMessage,
+	response string) (*http.Response, error) {
+	if response == "" {
+		return nil, fmt.Errorf("Message response cannot be blank")
+	}
+	return b.SendPrivateMessage(e.SenderEmail, response)
 }
 
 func (b Bot) constructRequest(method, endpoint, body string) (*http.Request,
