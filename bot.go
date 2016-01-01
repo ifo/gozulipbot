@@ -26,7 +26,15 @@ func MakeBot(email, apikey string, streams []string) Bot {
 
 func (b Bot) SendStreamMessage(stream, topic, content string) (*http.Response,
 	error) {
-	// TODO ensure stream exists, content is non-empty
+	if stream == "" {
+		return nil, fmt.Errorf("stream cannot be empty")
+	}
+	if topic == "" {
+		return nil, fmt.Errorf("topic cannot be empty")
+	}
+	if content == "" {
+		return nil, fmt.Errorf("content cannot be empty")
+	}
 	req, err := b.constructMessageRequest("stream", stream, topic, content)
 	if err != nil {
 		return nil, err
@@ -37,7 +45,12 @@ func (b Bot) SendStreamMessage(stream, topic, content string) (*http.Response,
 }
 
 func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
-	// TODO ensure "user" (a.k.a. email) exists, content is non-empty
+	if email == "" {
+		return nil, fmt.Errorf("email cannot be empty")
+	}
+	if content == "" {
+		return nil, fmt.Errorf("content cannot be empty")
+	}
 	req, err := b.constructMessageRequest("private", email, "", content)
 	if err != nil {
 		return nil, err
