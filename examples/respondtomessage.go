@@ -30,7 +30,7 @@ func main() {
 
 	streamTopic := "example-topic-name"
 
-	// Respond with "hi" to all messages in the specified stream
+	// Respond with "hi" to all messages in the specified stream topic
 	for _, m := range messages {
 		if m.Subject == streamTopic {
 			resp, err := bot.RespondToMessage(m, "hi")
@@ -54,7 +54,7 @@ func printResponse(r io.ReadCloser) {
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println(string(toPrint.Bytes()))
+	fmt.Println(toPrint.String())
 }
 
 func registerEvents(bot gzb.Bot) bytes.Buffer {

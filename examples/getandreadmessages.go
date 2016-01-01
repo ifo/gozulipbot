@@ -64,7 +64,6 @@ func registerEvents(bot gzb.Bot) bytes.Buffer {
 
 func getEventsFromQueue(bot gzb.Bot, queueID string,
 	lastMessageID int) bytes.Buffer {
-
 	resp, err := bot.GetEventsFromQueue(queueID, lastMessageID)
 	if err != nil {
 		log.Fatal("get events from queue error: ", err)

@@ -96,6 +96,7 @@ func (b Bot) GetStreamNameList() ([]string, error) {
 }
 
 func (b Bot) SubscribeToStreams(streams []string) (*http.Response, error) {
+	// TODO subscribe to streams the bot has if no streams given
 	var toSubStreams []map[string]string
 	for _, name := range streams {
 		toSubStreams = append(toSubStreams, map[string]string{"name": name})
