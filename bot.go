@@ -24,8 +24,7 @@ func MakeBot(email, apikey string, streams []string) Bot {
 	}
 }
 
-func (b Bot) SendStreamMessage(stream, topic, content string) (*http.Response,
-	error) {
+func (b Bot) SendStreamMessage(stream, topic, content string) (*http.Response, error) {
 	if stream == "" {
 		return nil, fmt.Errorf("stream cannot be empty")
 	}
@@ -147,8 +146,7 @@ func (b Bot) RegisterEvents() (*http.Response, error) {
 	return c.Do(req)
 }
 
-func (b Bot) GetEventsFromQueue(queueID string,
-	lastMessageID int) (*http.Response, error) {
+func (b Bot) GetEventsFromQueue(queueID string, lastMessageID int) (*http.Response, error) {
 	values := url.Values{}
 	values.Set("queue_id", queueID)
 	values.Set("last_event_id", strconv.Itoa(lastMessageID))
@@ -164,8 +162,7 @@ func (b Bot) GetEventsFromQueue(queueID string,
 	return c.Do(req)
 }
 
-func (b Bot) RespondToMessage(e EventMessage, response string) (*http.Response,
-	error) {
+func (b Bot) RespondToMessage(e EventMessage, response string) (*http.Response, error) {
 	if response == "" {
 		return nil, fmt.Errorf("Message response cannot be blank")
 	}
@@ -187,8 +184,7 @@ func (b Bot) RespondToMessagePrivately(e EventMessage,
 	return b.SendPrivateMessage(e.SenderEmail, response)
 }
 
-func (b Bot) constructRequest(method, endpoint, body string) (*http.Request,
-	error) {
+func (b Bot) constructRequest(method, endpoint, body string) (*http.Request, error) {
 	url := fmt.Sprintf("https://api.zulip.com/v1/%s", endpoint)
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
@@ -201,8 +197,7 @@ func (b Bot) constructRequest(method, endpoint, body string) (*http.Request,
 	return req, nil
 }
 
-func (b Bot) constructMessageRequest(mtype, to, subject,
-	content string) (*http.Request, error) {
+func (b Bot) constructMessageRequest(mtype, to, subject, content string) (*http.Request, error) {
 	values := url.Values{}
 	values.Set("type", mtype)
 	values.Set("to", to)
