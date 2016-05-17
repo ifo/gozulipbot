@@ -14,6 +14,18 @@ type Bot struct {
 	EmailAddress string
 	ApiKey       string
 	Streams      []string
+	client       Doer
+}
+
+type Doer interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
+type Message struct {
+	Stream  string
+	Topic   string
+	Emails  []string
+	Content string
 }
 
 func MakeBot(email, apikey string, streams []string) Bot {
@@ -21,7 +33,42 @@ func MakeBot(email, apikey string, streams []string) Bot {
 		EmailAddress: email,
 		ApiKey:       apikey,
 		Streams:      streams,
+		client:       http.DefaultClient,
 	}
+}
+
+func (b *Bot) Message(m Message) (*http.Response, error) {
+	if m.Content == "" {
+		return nil, fmt.Errorf("content cannot be empty")
+	}
+
+	// if any emails are set, this is a private message
+	if len(m.Emails) != 0 {
+		return b.PrivateMessage(m)
+	}
+
+	// otherwise it's a stream message
+	if m.Stream == "" {
+		return nil, fmt.Errorf("stream cannot be empty")
+	}
+	if m.Topic == "" {
+		return nil, fmt.Errorf("topic cannot be empty")
+	}
+	req, err := b.constructMessageRequest("stream", m.Stream, m.Topic, m.Content)
+	if err != nil {
+		return nil, err
+	}
+	return b.client.Do(req)
+}
+
+func (b *Bot) PrivateMessage(m Message) (*http.Response, error) {
+	// handle multiple emails
+	req, err := b.constructMessageRequest("private", m.Emails[0], "", m.Content)
+	if err != nil {
+		return nil, err
+	}
+
+	return b.client.Do(req)
 }
 
 func (b Bot) SendStreamMessage(stream, topic, content string) (*http.Response, error) {
