@@ -33,7 +33,7 @@ func main() {
 	// Respond with "hi" to all messages in the specified stream topic
 	for _, m := range messages {
 		if m.Subject == streamTopic {
-			resp, err := bot.RespondToMessage(m, "hi")
+			resp, err := bot.Respond(m, "hi")
 			if err != nil {
 				log.Println(err)
 			} else {
