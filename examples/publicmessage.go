@@ -18,8 +18,13 @@ func main() {
 
 	bot := gzb.MakeBot(emailAddress, apiKey, []string{})
 
-	resp, err := bot.SendStreamMessage("test-bot", "test-go-bot",
-		"this is a stream message")
+	m := Message{
+		Stream:  "test-bot",
+		Topic:   "test-go-bot",
+		Content: "this is a stream message",
+	}
+
+	resp, err := bot.Message(m)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -18,8 +18,12 @@ func main() {
 
 	bot := gzb.MakeBot(emailAddress, apiKey, []string{})
 
-	resp, err := bot.SendPrivateMessage("person@example.com",
-		"this message is private")
+	m := Message{
+		Emails:  {"person@example.com"},
+		Content: "this message is private",
+	}
+
+	resp, err := bot.PrivateMessage(m)
 	if err != nil {
 		log.Fatal(err)
 	}
