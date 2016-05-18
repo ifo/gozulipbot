@@ -209,6 +209,25 @@ func (b Bot) GetEventsFromQueue(queueID string, lastMessageID int) (*http.Respon
 	return c.Do(req)
 }
 
+func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
+	if response == "" {
+		return nil, fmt.Errorf("Message response cannot be blank")
+	}
+	m := Message{
+		Stream:  e.Subject,
+		Topic:   e.DisplayRecipient.Topic,
+		Content: response,
+	}
+	if m.Topic != "" {
+		return b.Message(m)
+	}
+	if m.Stream == "" {
+		m.Emails = []string{e.SenderEmail}
+		return b.Message(m)
+	}
+	return nil, fmt.Errorf("EventMessage is not understood: %v\n", e)
+}
+
 func (b Bot) RespondToMessage(e EventMessage, response string) (*http.Response, error) {
 	if response == "" {
 		return nil, fmt.Errorf("Message response cannot be blank")
