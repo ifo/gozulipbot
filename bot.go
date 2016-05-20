@@ -71,14 +71,13 @@ func (b *Bot) PrivateMessage(m Message) (*http.Response, error) {
 	return b.client.Do(req)
 }
 
-func (b Bot) GetStreamList() (*http.Response, error) {
+func (b *Bot) GetStreamList() (*http.Response, error) {
 	req, err := b.constructRequest("GET", "streams", "")
 	if err != nil {
 		return nil, err
 	}
 
-	c := http.Client{}
-	return c.Do(req)
+	return b.client.Do(req)
 }
 
 type streamJson struct {
@@ -92,7 +91,7 @@ type streamJson struct {
 	Result string `json:result`
 }
 
-func (b Bot) GetStreamNameList() ([]string, error) {
+func (b *Bot) GetStreamNameList() ([]string, error) {
 	resp, err := b.GetStreamList()
 	if err != nil {
 		return nil, err
@@ -119,11 +118,11 @@ func (b Bot) GetStreamNameList() ([]string, error) {
 	return outStreams, nil
 }
 
-func (b Bot) Subscribe() (*http.Response, error) {
+func (b *Bot) Subscribe() (*http.Response, error) {
 	return b.SubscribeToStreams(b.Streams)
 }
 
-func (b Bot) SubscribeToStreams(streams []string) (*http.Response, error) {
+func (b *Bot) SubscribeToStreams(streams []string) (*http.Response, error) {
 	if streams == nil {
 		return nil, fmt.Errorf("no streams given")
 	}
@@ -144,21 +143,19 @@ func (b Bot) SubscribeToStreams(streams []string) (*http.Response, error) {
 		return nil, err
 	}
 
-	c := http.Client{}
-	return c.Do(req)
+	return b.client.Do(req)
 }
 
-func (b Bot) RegisterEvents() (*http.Response, error) {
+func (b *Bot) RegisterEvents() (*http.Response, error) {
 	req, err := b.constructRequest("POST", "register", `event_types=["message"]`)
 	if err != nil {
 		return nil, err
 	}
 
-	c := http.Client{}
-	return c.Do(req)
+	return b.client.Do(req)
 }
 
-func (b Bot) GetEventsFromQueue(queueID string, lastMessageID int) (*http.Response, error) {
+func (b *Bot) GetEventsFromQueue(queueID string, lastMessageID int) (*http.Response, error) {
 	values := url.Values{}
 	values.Set("queue_id", queueID)
 	values.Set("last_event_id", strconv.Itoa(lastMessageID))
@@ -170,8 +167,7 @@ func (b Bot) GetEventsFromQueue(queueID string, lastMessageID int) (*http.Respon
 		return nil, err
 	}
 
-	c := http.Client{}
-	return c.Do(req)
+	return b.client.Do(req)
 }
 
 func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
@@ -193,7 +189,7 @@ func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 	return nil, fmt.Errorf("EventMessage is not understood: %v\n", e)
 }
 
-func (b Bot) constructRequest(method, endpoint, body string) (*http.Request, error) {
+func (b *Bot) constructRequest(method, endpoint, body string) (*http.Request, error) {
 	url := fmt.Sprintf("https://api.zulip.com/v1/%s", endpoint)
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
@@ -206,7 +202,7 @@ func (b Bot) constructRequest(method, endpoint, body string) (*http.Request, err
 	return req, nil
 }
 
-func (b Bot) constructMessageRequest(mtype, to, subject, content string) (*http.Request, error) {
+func (b *Bot) constructMessageRequest(mtype, to, subject, content string) (*http.Request, error) {
 	values := url.Values{}
 	values.Set("type", mtype)
 	values.Set("to", to)
