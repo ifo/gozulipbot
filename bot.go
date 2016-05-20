@@ -71,41 +71,6 @@ func (b *Bot) PrivateMessage(m Message) (*http.Response, error) {
 	return b.client.Do(req)
 }
 
-func (b Bot) SendStreamMessage(stream, topic, content string) (*http.Response, error) {
-	if stream == "" {
-		return nil, fmt.Errorf("stream cannot be empty")
-	}
-	if topic == "" {
-		return nil, fmt.Errorf("topic cannot be empty")
-	}
-	if content == "" {
-		return nil, fmt.Errorf("content cannot be empty")
-	}
-	req, err := b.constructMessageRequest("stream", stream, topic, content)
-	if err != nil {
-		return nil, err
-	}
-
-	c := http.Client{}
-	return c.Do(req)
-}
-
-func (b Bot) SendPrivateMessage(email, content string) (*http.Response, error) {
-	if email == "" {
-		return nil, fmt.Errorf("email cannot be empty")
-	}
-	if content == "" {
-		return nil, fmt.Errorf("content cannot be empty")
-	}
-	req, err := b.constructMessageRequest("private", email, "", content)
-	if err != nil {
-		return nil, err
-	}
-
-	c := http.Client{}
-	return c.Do(req)
-}
-
 func (b Bot) GetStreamList() (*http.Response, error) {
 	req, err := b.constructRequest("GET", "streams", "")
 	if err != nil {
@@ -226,28 +191,6 @@ func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 		return b.Message(m)
 	}
 	return nil, fmt.Errorf("EventMessage is not understood: %v\n", e)
-}
-
-func (b Bot) RespondToMessage(e EventMessage, response string) (*http.Response, error) {
-	if response == "" {
-		return nil, fmt.Errorf("Message response cannot be blank")
-	}
-	if e.DisplayRecipient.Topic != "" {
-		return b.SendStreamMessage(e.DisplayRecipient.Topic, e.Subject, response)
-	}
-	// TODO handle multiple users in a private message
-	if e.Subject == "" {
-		return b.SendPrivateMessage(e.SenderEmail, response)
-	}
-	return nil, fmt.Errorf("EventMessage is not understood: %v\n", e)
-}
-
-func (b Bot) RespondToMessagePrivately(e EventMessage,
-	response string) (*http.Response, error) {
-	if response == "" {
-		return nil, fmt.Errorf("Message response cannot be blank")
-	}
-	return b.SendPrivateMessage(e.SenderEmail, response)
 }
 
 func (b Bot) constructRequest(method, endpoint, body string) (*http.Request, error) {
