@@ -1,8 +1,8 @@
 package gozulipbot
 
 import (
+	"errors"
 	"flag"
-	"fmt"
 )
 
 func GetConfigFromFlags() (string, string, error) {
@@ -13,10 +13,10 @@ func GetConfigFromFlags() (string, string, error) {
 	flag.Parse()
 
 	if *emailAddress == "" {
-		return "", "", fmt.Errorf("--email required, but wasn't set")
+		return "", "", errors.New("--email required, but wasn't set")
 	}
 	if *apiKey == "" {
-		return "", "", fmt.Errorf("--apikey required, but wasn't set")
+		return "", "", errors.New("--apikey required, but wasn't set")
 	}
 
 	return *emailAddress, *apiKey, nil

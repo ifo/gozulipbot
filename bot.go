@@ -2,6 +2,7 @@ package gozulipbot
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -39,7 +40,7 @@ func MakeBot(email, apikey string, streams []string) Bot {
 
 func (b *Bot) Message(m Message) (*http.Response, error) {
 	if m.Content == "" {
-		return nil, fmt.Errorf("content cannot be empty")
+		return nil, errors.New("content cannot be empty")
 	}
 
 	// if any emails are set, this is a private message
@@ -49,10 +50,10 @@ func (b *Bot) Message(m Message) (*http.Response, error) {
 
 	// otherwise it's a stream message
 	if m.Stream == "" {
-		return nil, fmt.Errorf("stream cannot be empty")
+		return nil, errors.New("stream cannot be empty")
 	}
 	if m.Topic == "" {
-		return nil, fmt.Errorf("topic cannot be empty")
+		return nil, errors.New("topic cannot be empty")
 	}
 	req, err := b.constructMessageRequest("stream", m.Stream, m.Topic, m.Content)
 	if err != nil {
@@ -172,7 +173,7 @@ func (b *Bot) GetEventsFromQueue(queueID string, lastMessageID int) (*http.Respo
 
 func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 	if response == "" {
-		return nil, fmt.Errorf("Message response cannot be blank")
+		return nil, errors.New("Message response cannot be blank")
 	}
 	m := Message{
 		Stream:  e.Subject,
@@ -190,7 +191,7 @@ func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 }
 
 func (b *Bot) constructRequest(method, endpoint, body string) (*http.Request, error) {
-	url := fmt.Sprintf("https://api.zulip.com/v1/%s", endpoint)
+	url := "https://api.zulip.com/v1/" + endpoint
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
 		return nil, err
