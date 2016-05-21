@@ -92,7 +92,7 @@ type streamJson struct {
 	Result string `json:result`
 }
 
-func (b *Bot) GetStreamNameList() ([]string, error) {
+func (b *Bot) GetStreams() ([]string, error) {
 	resp, err := b.GetStreamList()
 	if err != nil {
 		return nil, err
@@ -119,14 +119,11 @@ func (b *Bot) GetStreamNameList() ([]string, error) {
 	return outStreams, nil
 }
 
-func (b *Bot) Subscribe() (*http.Response, error) {
-	return b.SubscribeToStreams(b.Streams)
-}
-
-func (b *Bot) SubscribeToStreams(streams []string) (*http.Response, error) {
+func (b *Bot) Subscribe(streams []string) (*http.Response, error) {
 	if streams == nil {
-		return nil, fmt.Errorf("no streams given")
+		streams = b.Streams
 	}
+
 	var toSubStreams []map[string]string
 	for _, name := range streams {
 		toSubStreams = append(toSubStreams, map[string]string{"name": name})

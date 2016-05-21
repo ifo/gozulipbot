@@ -26,7 +26,7 @@ func main() {
 }
 
 func getStreamListNames(bot gzb.Bot) []string {
-	list, err := bot.GetStreamNameList()
+	list, err := bot.GetStreams()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func getStreamListNames(bot gzb.Bot) []string {
 }
 
 func subscribeToStreams(bot gzb.Bot, streams []string) bytes.Buffer {
-	resp, err := bot.SubscribeToStreams(streams)
+	resp, err := bot.Subscribe(streams)
 	if err != nil {
 		log.Fatal(err)
 	}
