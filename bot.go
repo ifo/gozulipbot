@@ -22,6 +22,11 @@ type Doer interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
+// A Message is all of the necessary metadata to post on Zulip.
+// It can be either a public message, where Topic is set, or a private message,
+// where there is at least one element in Emails.
+//
+// If the length of Emails is not 0, functions will always assume it is a private message.
 type Message struct {
 	Stream  string
 	Topic   string
@@ -29,6 +34,7 @@ type Message struct {
 	Content string
 }
 
+// MakeBot creates a bot object and gives it an http client.
 func MakeBot(email, apikey string, streams []string) Bot {
 	return Bot{
 		EmailAddress: email,
@@ -38,6 +44,8 @@ func MakeBot(email, apikey string, streams []string) Bot {
 	}
 }
 
+// Message posts a message to Zulip. If any emails have been set on the message,
+// the message will be re-routed to the PrivateMessage function.
 func (b *Bot) Message(m Message) (*http.Response, error) {
 	if m.Content == "" {
 		return nil, errors.New("content cannot be empty")
@@ -62,8 +70,10 @@ func (b *Bot) Message(m Message) (*http.Response, error) {
 	return b.client.Do(req)
 }
 
+// PrivateMessage sends a message to the first user in the message email slice.
+//
+// TODO have PrivateMessage to handle multiple emails
 func (b *Bot) PrivateMessage(m Message) (*http.Response, error) {
-	// handle multiple emails
 	req, err := b.constructMessageRequest("private", m.Emails[0], "", m.Content)
 	if err != nil {
 		return nil, err
@@ -72,6 +82,7 @@ func (b *Bot) PrivateMessage(m Message) (*http.Response, error) {
 	return b.client.Do(req)
 }
 
+// GetStreamList gets the raw http response when requesting all public streams.
 func (b *Bot) GetStreamList() (*http.Response, error) {
 	req, err := b.constructRequest("GET", "streams", "")
 	if err != nil {
@@ -92,6 +103,7 @@ type streamJson struct {
 	Result string `json:result`
 }
 
+// GetStreams returns a list of all public streams
 func (b *Bot) GetStreams() ([]string, error) {
 	resp, err := b.GetStreamList()
 	if err != nil {
@@ -119,6 +131,8 @@ func (b *Bot) GetStreams() ([]string, error) {
 	return outStreams, nil
 }
 
+// Subscribe will set the bot to receive messages from the given streams.
+// If no streams are given, it will subscribe the bot to the streams in the bot struct.
 func (b *Bot) Subscribe(streams []string) (*http.Response, error) {
 	if streams == nil {
 		streams = b.Streams
@@ -144,6 +158,9 @@ func (b *Bot) Subscribe(streams []string) (*http.Response, error) {
 	return b.client.Do(req)
 }
 
+// RegisterEvents tells Zulip to include message events in the bots events queue.
+// It is necessary to call only once ever, to be able to receive messages.
+// Calling it multiple times will have no negative effect.
 func (b *Bot) RegisterEvents() (*http.Response, error) {
 	req, err := b.constructRequest("POST", "register", `event_types=["message"]`)
 	if err != nil {
@@ -153,6 +170,9 @@ func (b *Bot) RegisterEvents() (*http.Response, error) {
 	return b.client.Do(req)
 }
 
+// GetEventsFromQueue receives a list of events (a.k.a. received messages) since
+// the last message given.
+// Messages received in this queue will be EventMessages.
 func (b *Bot) GetEventsFromQueue(queueID string, lastMessageID int) (*http.Response, error) {
 	values := url.Values{}
 	values.Set("queue_id", queueID)
@@ -168,6 +188,11 @@ func (b *Bot) GetEventsFromQueue(queueID string, lastMessageID int) (*http.Respo
 	return b.client.Do(req)
 }
 
+// Respond sends a given message as a response to whatever context from which
+// an EventMessage was received.
+//
+// TODO due to private message limitations, it will not be able to respond
+// to multiple users in a group private message.
 func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 	if response == "" {
 		return nil, errors.New("Message response cannot be blank")
@@ -187,6 +212,7 @@ func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 	return nil, fmt.Errorf("EventMessage is not understood: %v\n", e)
 }
 
+// constructRequest makes a zulip request and ensures the proper headers are set.
 func (b *Bot) constructRequest(method, endpoint, body string) (*http.Request, error) {
 	url := "https://api.zulip.com/v1/" + endpoint
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
@@ -200,6 +226,7 @@ func (b *Bot) constructRequest(method, endpoint, body string) (*http.Request, er
 	return req, nil
 }
 
+// constructMessageRequest is a helper for simplifying sending a message.
 func (b *Bot) constructMessageRequest(mtype, to, subject, content string) (*http.Request, error) {
 	values := url.Values{}
 	values.Set("type", mtype)
