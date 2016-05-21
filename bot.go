@@ -72,6 +72,9 @@ func (b *Bot) Message(m Message) (*http.Response, error) {
 
 // PrivateMessage sends a message to the first user in the message email slice.
 func (b *Bot) PrivateMessage(m Message) (*http.Response, error) {
+	if len(m.Emails) == 0 {
+		return nil, errors.New("there must be at least one recipient")
+	}
 	req, err := b.constructMessageRequest(m)
 	if err != nil {
 		return nil, err
