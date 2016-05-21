@@ -63,7 +63,7 @@ func (b *Bot) Message(m Message) (*http.Response, error) {
 	if m.Topic == "" {
 		return nil, errors.New("topic cannot be empty")
 	}
-	req, err := b.constructMessageRequest("stream", m.Stream, m.Topic, m.Content)
+	req, err := b.constructMessageRequest(m)
 	if err != nil {
 		return nil, err
 	}
@@ -71,10 +71,8 @@ func (b *Bot) Message(m Message) (*http.Response, error) {
 }
 
 // PrivateMessage sends a message to the first user in the message email slice.
-//
-// TODO have PrivateMessage to handle multiple emails
 func (b *Bot) PrivateMessage(m Message) (*http.Response, error) {
-	req, err := b.constructMessageRequest("private", m.Emails[0], "", m.Content)
+	req, err := b.constructMessageRequest(m)
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +189,7 @@ func (b *Bot) GetEventsFromQueue(queueID string, lastMessageID int) (*http.Respo
 // Respond sends a given message as a response to whatever context from which
 // an EventMessage was received.
 //
-// TODO due to private message limitations, it will not be able to respond
+// TODO due to constructMessageRequest limitations, it will not be able to respond
 // to multiple users in a group private message.
 func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 	if response == "" {
@@ -227,13 +225,22 @@ func (b *Bot) constructRequest(method, endpoint, body string) (*http.Request, er
 }
 
 // constructMessageRequest is a helper for simplifying sending a message.
-func (b *Bot) constructMessageRequest(mtype, to, subject, content string) (*http.Request, error) {
+//
+// TODO have contructMessageRequest to handle multiple emails
+func (b *Bot) constructMessageRequest(m Message) (*http.Request, error) {
+	to := m.Stream
+	mtype := "stream"
+	if len(m.Emails) != 0 {
+		to = m.Emails[0]
+		mtype = "private"
+	}
+
 	values := url.Values{}
 	values.Set("type", mtype)
 	values.Set("to", to)
-	values.Set("content", content)
+	values.Set("content", m.Content)
 	if mtype == "stream" {
-		values.Set("subject", subject)
+		values.Set("subject", m.Topic)
 	}
 
 	return b.constructRequest("POST", "messages", values.Encode())
