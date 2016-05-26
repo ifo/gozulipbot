@@ -192,8 +192,8 @@ func (b *Bot) GetEventsFromQueue(queueID string, lastMessageID int) (*http.Respo
 // Respond sends a given message as a response to whatever context from which
 // an EventMessage was received.
 //
-// TODO due to constructMessageRequest limitations, it will not be able to respond
-// to multiple users in a group private message.
+// TODO in a multiuser private message, determine where the non-sender
+// user information is.
 func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 	if response == "" {
 		return nil, errors.New("Message response cannot be blank")
