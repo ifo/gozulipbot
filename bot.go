@@ -228,14 +228,24 @@ func (b *Bot) constructRequest(method, endpoint, body string) (*http.Request, er
 }
 
 // constructMessageRequest is a helper for simplifying sending a message.
-//
-// TODO have contructMessageRequest to handle multiple emails
 func (b *Bot) constructMessageRequest(m Message) (*http.Request, error) {
 	to := m.Stream
 	mtype := "stream"
-	if len(m.Emails) != 0 {
-		to = m.Emails[0]
+
+	le := len(m.Emails)
+	if le != 0 {
 		mtype = "private"
+	}
+	if le == 1 {
+		to = m.Emails[0]
+	}
+	if le > 1 {
+		for i, e := range m.Emails {
+			to += e
+			if i != le-1 {
+				to += ", "
+			}
+		}
 	}
 
 	values := url.Values{}
