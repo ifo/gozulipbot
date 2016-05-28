@@ -18,7 +18,7 @@ func main() {
 
 	bot := gzb.MakeBot(emailAddress, apiKey, []string{})
 
-	m := Message{
+	m := gzb.Message{
 		Emails:  {"person@example.com"},
 		Content: "this message is private",
 	}

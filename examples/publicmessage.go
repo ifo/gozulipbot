@@ -18,7 +18,7 @@ func main() {
 
 	bot := gzb.MakeBot(emailAddress, apiKey, []string{})
 
-	m := Message{
+	m := gzb.Message{
 		Stream:  "test-bot",
 		Topic:   "test-go-bot",
 		Content: "this is a stream message",
