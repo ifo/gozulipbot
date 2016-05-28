@@ -191,9 +191,6 @@ func (b *Bot) GetEventsFromQueue(queueID string, lastMessageID int) (*http.Respo
 
 // Respond sends a given message as a response to whatever context from which
 // an EventMessage was received.
-//
-// TODO in a multiuser private message, determine where the non-sender
-// user information is.
 func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 	if response == "" {
 		return nil, errors.New("Message response cannot be blank")
@@ -206,11 +203,31 @@ func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 	if m.Topic != "" {
 		return b.Message(m)
 	}
+	// private message
 	if m.Stream == "" {
-		m.Emails = []string{e.SenderEmail}
+		emails, err := b.privateResponseList(e)
+		if err != nil {
+			return nil, err
+		}
+		m.Emails = emails
 		return b.Message(m)
 	}
 	return nil, fmt.Errorf("EventMessage is not understood: %v\n", e)
+}
+
+// privateResponseList gets the list of other users in a private multiple
+// message conversation.
+func (b *Bot) privateResponseList(e EventMessage) ([]string, error) {
+	var out []string
+	for _, u := range e.DisplayRecipient.Users {
+		if u.Email != b.EmailAddress {
+			out = append(out, u.Email)
+		}
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("EventMessage had no Users within the DisplayRecipient")
+	}
+	return out, nil
 }
 
 // constructRequest makes a zulip request and ensures the proper headers are set.
