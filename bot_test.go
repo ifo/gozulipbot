@@ -1,6 +1,7 @@
 package gozulipbot
 
 import (
+	"net/http"
 	"testing"
 )
 
@@ -21,4 +22,14 @@ func TestMakeBot(t *testing.T) {
 			t.Errorf("case %s, actual %s, expected %s", k, b.Streams[0], c[2])
 		}
 	}
+}
+
+type testClient struct {
+	Request  *http.Request
+	Response *http.Response
+}
+
+func (t *testClient) Do(r *http.Request) (*http.Response, error) {
+	t.Request = r
+	return t.Response, nil
 }
