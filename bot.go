@@ -196,8 +196,8 @@ func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 		return nil, errors.New("Message response cannot be blank")
 	}
 	m := Message{
-		Stream:  e.Subject,
-		Topic:   e.DisplayRecipient.Topic,
+		Stream:  e.DisplayRecipient.Topic,
+		Topic:   e.Subject,
 		Content: response,
 	}
 	if m.Topic != "" {
