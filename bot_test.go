@@ -24,6 +24,23 @@ func TestMakeBot(t *testing.T) {
 	}
 }
 
+func TestMessage(t *testing.T) {
+	t.Skip()
+}
+
+func TestPrivateMessage(t *testing.T) {
+	t.Skip()
+}
+
+func getTestBot() *Bot {
+	return &Bot{
+		EmailAddress: "testbot@example.com",
+		ApiKey:       "apikey",
+		Streams:      []string{"stream a", "test bots"},
+		client:       &testClient{},
+	}
+}
+
 type testClient struct {
 	Request  *http.Request
 	Response *http.Response
