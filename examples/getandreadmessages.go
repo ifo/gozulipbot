@@ -43,7 +43,7 @@ func main() {
 }
 
 func registerEvents(bot gzb.Bot) bytes.Buffer {
-	resp, err := bot.RegisterEvents()
+	resp, err := bot.RegisterAll()
 	if err != nil {
 		log.Fatal("register events error 1: ", err)
 	}

@@ -159,16 +159,48 @@ func (b *Bot) Subscribe(streams []string) (*http.Response, error) {
 	return b.client.Do(req)
 }
 
+type Narrow string
+
+const (
+	NarrowPrivate Narrow = `[["is", "private"]]`
+	NarrowAt      Narrow = `[["is", "mentioned"]]`
+)
+
 // RegisterEvents tells Zulip to include message events in the bots events queue.
 // It is necessary to call only once ever, to be able to receive messages.
 // Calling it multiple times will have no negative effect.
-func (b *Bot) RegisterEvents() (*http.Response, error) {
-	req, err := b.constructRequest("POST", "register", `event_types=["message"]`)
+func (b *Bot) RegisterEvents(evtTypes []string, n Narrow) (*http.Response, error) {
+	query := `event_types=["`
+	for i, s := range evtTypes {
+		query += s
+		if i != len(evtTypes)-1 {
+			query += `", "`
+		}
+	}
+	query += `"]`
+
+	if n != "" {
+		query += fmt.Sprintf("&narrow=%s", n)
+	}
+
+	req, err := b.constructRequest("POST", "register", query)
 	if err != nil {
 		return nil, err
 	}
 
 	return b.client.Do(req)
+}
+
+func (b *Bot) RegisterAll() (*http.Response, error) {
+	return b.RegisterEvents([]string{"message"}, "")
+}
+
+func (b *Bot) RegisterAt() (*http.Response, error) {
+	return b.RegisterEvents([]string{"message"}, NarrowAt)
+}
+
+func (b *Bot) RegisterPrivate() (*http.Response, error) {
+	return b.RegisterEvents([]string{"message"}, NarrowPrivate)
 }
 
 // GetEventsFromQueue receives a list of events (a.k.a. received messages) since
