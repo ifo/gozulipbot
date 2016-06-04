@@ -122,13 +122,12 @@ func (b *Bot) GetStreams() ([]string, error) {
 		return nil, err
 	}
 
-	var outStreams []string
-
-	for _, stream := range sj.Streams {
-		outStreams = append(outStreams, stream.Name)
+	var streams []string
+	for _, s := range sj.Streams {
+		streams = append(streams, s.Name)
 	}
 
-	return outStreams, nil
+	return streams, nil
 }
 
 // Subscribe will set the bot to receive messages from the given streams.
