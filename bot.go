@@ -93,7 +93,7 @@ func (b *Bot) GetStreamList() (*http.Response, error) {
 	return b.client.Do(req)
 }
 
-type streamJson struct {
+type StreamJSON struct {
 	Msg     string `json:msg`
 	Streams []struct {
 		StreamID    int    `json:stream_id`
@@ -116,16 +116,15 @@ func (b *Bot) GetStreams() ([]string, error) {
 		return nil, err
 	}
 
-	var getStreamJson streamJson
-
-	err = json.Unmarshal(body, &getStreamJson)
+	var sj StreamJSON
+	err = json.Unmarshal(body, &sj)
 	if err != nil {
 		return nil, err
 	}
 
 	var outStreams []string
 
-	for _, stream := range getStreamJson.Streams {
+	for _, stream := range sj.Streams {
 		outStreams = append(outStreams, stream.Name)
 	}
 
