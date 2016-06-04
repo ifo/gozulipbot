@@ -159,6 +159,15 @@ func (b *Bot) Subscribe(streams []string) (*http.Response, error) {
 	return b.client.Do(req)
 }
 
+type EventType string
+
+const (
+	Messages      EventType = "messages"
+	Subscriptions EventType = "subscriptions"
+	RealmUser     EventType = "realm_user"
+	Pointer       EventType = "pointer"
+)
+
 type Narrow string
 
 const (
@@ -167,17 +176,21 @@ const (
 )
 
 // RegisterEvents tells Zulip to include message events in the bots events queue.
-// It is necessary to call only once ever, to be able to receive messages.
-// Calling it multiple times will have no negative effect.
-func (b *Bot) RegisterEvents(evtTypes []string, n Narrow) (*http.Response, error) {
-	query := `event_types=["`
-	for i, s := range evtTypes {
-		query += s
-		if i != len(evtTypes)-1 {
-			query += `", "`
+// Passing nil as the slice of EventType will default to receiving Messages
+func (b *Bot) RegisterEvents(es []EventType, n Narrow) (*http.Response, error) {
+	// default to Messages if no EventTypes given
+	query := `event_types=["message"]`
+
+	if len(es) != 0 {
+		query = `event_types=["`
+		for i, s := range es {
+			query += fmt.Sprintf("%s", s)
+			if i != len(es)-1 {
+				query += `", "`
+			}
 		}
+		query += `"]`
 	}
-	query += `"]`
 
 	if n != "" {
 		query += fmt.Sprintf("&narrow=%s", n)
@@ -192,15 +205,15 @@ func (b *Bot) RegisterEvents(evtTypes []string, n Narrow) (*http.Response, error
 }
 
 func (b *Bot) RegisterAll() (*http.Response, error) {
-	return b.RegisterEvents([]string{"message"}, "")
+	return b.RegisterEvents(nil, "")
 }
 
 func (b *Bot) RegisterAt() (*http.Response, error) {
-	return b.RegisterEvents([]string{"message"}, NarrowAt)
+	return b.RegisterEvents(nil, NarrowAt)
 }
 
 func (b *Bot) RegisterPrivate() (*http.Response, error) {
-	return b.RegisterEvents([]string{"message"}, NarrowPrivate)
+	return b.RegisterEvents(nil, NarrowPrivate)
 }
 
 // GetEventsFromQueue receives a list of events (a.k.a. received messages) since
