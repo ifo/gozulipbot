@@ -7,17 +7,17 @@ import (
 
 func GetConfigFromFlags() (string, string, error) {
 	var (
-		emailAddress = flag.String("email", "", "bot email address")
-		apiKey       = flag.String("apikey", "", "bot api key")
+		email  = flag.String("email", "", "bot email address")
+		apiKey = flag.String("apikey", "", "bot api key")
 	)
 	flag.Parse()
 
-	if *emailAddress == "" {
-		return "", "", errors.New("--email required, but wasn't set")
+	if *email == "" {
+		return "", "", errors.New("--email is required")
 	}
 	if *apiKey == "" {
-		return "", "", errors.New("--apikey required, but wasn't set")
+		return "", "", errors.New("--apikey is required")
 	}
 
-	return *emailAddress, *apiKey, nil
+	return *email, *apiKey, nil
 }

@@ -11,10 +11,10 @@ import (
 )
 
 type Bot struct {
-	EmailAddress string
-	ApiKey       string
-	Streams      []string
-	client       Doer
+	Email   string
+	APIKey  string
+	Streams []string
+	client  Doer
 }
 
 type Doer interface {
@@ -24,10 +24,10 @@ type Doer interface {
 // MakeBot creates a bot object and gives it an http client.
 func MakeBot(email, apikey string, streams []string) Bot {
 	return Bot{
-		EmailAddress: email,
-		ApiKey:       apikey,
-		Streams:      streams,
-		client:       http.DefaultClient,
+		Email:   email,
+		APIKey:  apikey,
+		Streams: streams,
+		client:  http.DefaultClient,
 	}
 }
 
@@ -189,7 +189,7 @@ func (b *Bot) constructRequest(method, endpoint, body string) (*http.Request, er
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.SetBasicAuth(b.EmailAddress, b.ApiKey)
+	req.SetBasicAuth(b.Email, b.APIKey)
 
 	return req, nil
 }

@@ -137,7 +137,7 @@ func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 func (b *Bot) privateResponseList(e EventMessage) ([]string, error) {
 	var out []string
 	for _, u := range e.DisplayRecipient.Users {
-		if u.Email != b.EmailAddress {
+		if u.Email != b.Email {
 			out = append(out, u.Email)
 		}
 	}
