@@ -21,14 +21,10 @@ type Doer interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
-// MakeBot creates a bot object and gives it an http client.
-func MakeBot(email, apikey string, streams []string) Bot {
-	return Bot{
-		Email:   email,
-		APIKey:  apikey,
-		Streams: streams,
-		client:  http.DefaultClient,
-	}
+// Init adds an http client to an existing bot struct.
+func (b *Bot) Init() *Bot {
+	b.client = &http.Client{}
+	return b
 }
 
 // GetStreamList gets the raw http response when requesting all public streams.

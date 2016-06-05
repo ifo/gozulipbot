@@ -16,7 +16,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	bot := gzb.MakeBot(emailAddress, apiKey, []string{})
+	bot := gzb.Bot{
+		Email:  emailAddress,
+		APIKey: apiKey,
+	}
+
+	bot.Init()
 
 	resp, err := bot.GetStreamList()
 	if err != nil {

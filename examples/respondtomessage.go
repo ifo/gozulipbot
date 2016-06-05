@@ -17,7 +17,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	bot := gzb.MakeBot(emailAddress, apiKey, []string{})
+	bot := gzb.Bot{
+		Email:  emailAddress,
+		APIKey: apiKey,
+	}
+
+	bot.Init()
 
 	regResp := registerEvents(bot)
 	queueID, lastEventID := getEventQueueInfo(regResp.Bytes())

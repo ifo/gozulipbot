@@ -5,22 +5,12 @@ import (
 	"testing"
 )
 
-func TestMakeBot(t *testing.T) {
-	cases := map[string][]string{
-		"1": {"email@example.com", "secretkey", "one-stream"},
-	}
+func TestBot_Init(t *testing.T) {
+	bot := Bot{}
+	bot.Init()
 
-	for k, c := range cases {
-		b := MakeBot(c[0], c[1], []string{c[2]})
-		if b.EmailAddress != c[0] {
-			t.Errorf("case %s, actual %s, expected %s", k, b.EmailAddress, c[0])
-		}
-		if b.ApiKey != c[1] {
-			t.Errorf("case %s, actual %s, expected %s", k, b.ApiKey, c[1])
-		}
-		if b.Streams[0] != c[2] {
-			t.Errorf("case %s, actual %s, expected %s", k, b.Streams[0], c[2])
-		}
+	if bot.client == nil {
+		t.Error("expected bot to have client")
 	}
 }
 
@@ -34,10 +24,10 @@ func TestPrivateMessage(t *testing.T) {
 
 func getTestBot() *Bot {
 	return &Bot{
-		EmailAddress: "testbot@example.com",
-		ApiKey:       "apikey",
-		Streams:      []string{"stream a", "test bots"},
-		client:       &testClient{},
+		Email:   "testbot@example.com",
+		APIKey:  "apikey",
+		Streams: []string{"stream a", "test bots"},
+		client:  &testClient{},
 	}
 }
 
