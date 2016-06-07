@@ -101,6 +101,15 @@ func (b *Bot) Subscribe(streams []string) (*http.Response, error) {
 	return b.client.Do(req)
 }
 
+func (b *Bot) ListSubscriptions() (*http.Response, error) {
+	req, err := b.constructRequest("GET", "users/me/subscriptions", "")
+	if err != nil {
+		return nil, err
+	}
+
+	return b.client.Do(req)
+}
+
 type EventType string
 
 const (
