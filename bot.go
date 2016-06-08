@@ -13,12 +13,19 @@ import (
 type Bot struct {
 	Email   string
 	APIKey  string
+	Queues  []*Queue
 	Streams []string
 	client  Doer
 }
 
 type Doer interface {
 	Do(*http.Request) (*http.Response, error)
+}
+
+type Queue struct {
+	ID           string
+	LastEventID  int
+	MaxMessageID int
 }
 
 // Init adds an http client to an existing bot struct.
