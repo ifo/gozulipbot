@@ -23,9 +23,9 @@ type Doer interface {
 }
 
 type Queue struct {
-	ID           string
-	LastEventID  int
-	MaxMessageID int
+	ID           string `json:"queue_id"`
+	LastEventID  int    `json:"last_event_id"`
+	MaxMessageID int    `json:"max_message_id"`
 }
 
 // Init adds an http client to an existing bot struct.
@@ -133,17 +133,58 @@ const (
 	NarrowAt      Narrow = `[["is", "mentioned"]]`
 )
 
-// RegisterEvents tells Zulip to include message events in the bots events queue.
+// RegisterEvents adds a queue to the bot. It includes the EventTypes and
+// Narrow given. If neither is given, it will default to all Messages.
+func (b *Bot) RegisterEvents(ets []EventType, n Narrow) (*Queue, error) {
+	resp, err := b.RawRegisterEvents(ets, n)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var q Queue
+	err = json.Unmarshal(body, &q)
+	if err != nil {
+		return nil, err
+	}
+
+	if q.LastEventID < q.MaxMessageID {
+		q.LastEventID = q.MaxMessageID
+	}
+
+	b.Queues = append(b.Queues, &q)
+
+	return &q, nil
+}
+
+func (b *Bot) RegisterAll() (*Queue, error) {
+	return b.RegisterEvents(nil, "")
+}
+
+func (b *Bot) RegisterAt() (*Queue, error) {
+	return b.RegisterEvents(nil, NarrowAt)
+}
+
+func (b *Bot) RegisterPrivate() (*Queue, error) {
+	return b.RegisterEvents(nil, NarrowPrivate)
+}
+
+// RawRegisterEvents tells Zulip to include message events in the bots events queue.
 // Passing nil as the slice of EventType will default to receiving Messages
-func (b *Bot) RegisterEvents(es []EventType, n Narrow) (*http.Response, error) {
+func (b *Bot) RawRegisterEvents(ets []EventType, n Narrow) (*http.Response, error) {
 	// default to Messages if no EventTypes given
 	query := `event_types=["message"]`
 
-	if len(es) != 0 {
+	if len(ets) != 0 {
 		query = `event_types=["`
-		for i, s := range es {
+		for i, s := range ets {
 			query += fmt.Sprintf("%s", s)
-			if i != len(es)-1 {
+			if i != len(ets)-1 {
 				query += `", "`
 			}
 		}
@@ -160,18 +201,6 @@ func (b *Bot) RegisterEvents(es []EventType, n Narrow) (*http.Response, error) {
 	}
 
 	return b.client.Do(req)
-}
-
-func (b *Bot) RegisterAll() (*http.Response, error) {
-	return b.RegisterEvents(nil, "")
-}
-
-func (b *Bot) RegisterAt() (*http.Response, error) {
-	return b.RegisterEvents(nil, NarrowAt)
-}
-
-func (b *Bot) RegisterPrivate() (*http.Response, error) {
-	return b.RegisterEvents(nil, NarrowPrivate)
 }
 
 // GetEventsFromQueue receives a list of events (a.k.a. received messages) since

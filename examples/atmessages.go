@@ -24,70 +24,31 @@ func main() {
 
 	bot.Init()
 
-	regResp := registerAt(bot)
+	q, err := bot.RegisterAt()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	queueID, lastEventID := getEventQueueInfo(regResp.Bytes())
-	evtResp := getEventsFromQueue(bot, queueID, lastEventID)
+	evtResp := getEventsFromQueue(bot, q.ID, q.LastEventID)
 
 	messages, err := gzb.ParseEventMessages(evtResp.Bytes())
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	streamTopic := "example-topic-name"
-
-	// Respond with "hi" to all @ messages in the specified stream topic
+	// Respond with "hi" to all @ messages
 	for _, m := range messages {
-		if m.Subject == streamTopic {
-			resp, err := bot.Respond(m, "hi")
-			if err != nil {
-				log.Println(err)
-			} else {
-				defer resp.Body.Close()
-				printResponse(resp.Body)
-			}
+		resp, err := bot.Respond(m, "hi")
+		if err != nil {
+			log.Println(err)
+		} else {
+			defer resp.Body.Close()
+			printResponse(resp.Body)
 		}
 	}
 }
 
-func registerAt(bot gzb.Bot) bytes.Buffer {
-	resp, err := bot.RegisterAt()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var out bytes.Buffer
-	err = json.Indent(&out, body, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return out
-}
-
-func getEventQueueInfo(b []byte) (queueID string, lastEventID int) {
-	regRespJson := map[string]interface{}{}
-	err := json.Unmarshal(b, &regRespJson)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	queueID = regRespJson["queue_id"].(string)
-	lastEventID = int(regRespJson["last_event_id"].(float64))
-	maxMsgID := int(regRespJson["max_message_id"].(float64))
-	if lastEventID < maxMsgID {
-		lastEventID = maxMsgID
-	}
-	return
-}
-
-func getEventsFromQueue(bot gzb.Bot, queueID string,
-	lastMessageID int) bytes.Buffer {
+func getEventsFromQueue(bot gzb.Bot, queueID string, lastMessageID int) bytes.Buffer {
 	resp, err := bot.GetEventsFromQueue(queueID, lastMessageID)
 	if err != nil {
 		log.Fatal("get events from queue error: ", err)
