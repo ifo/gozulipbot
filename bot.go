@@ -26,6 +26,7 @@ type Queue struct {
 	ID           string `json:"queue_id"`
 	LastEventID  int    `json:"last_event_id"`
 	MaxMessageID int    `json:"max_message_id"`
+	bot          *Bot   `json:"-"`
 }
 
 // Init adds an http client to an existing bot struct.
@@ -147,8 +148,8 @@ func (b *Bot) RegisterEvents(ets []EventType, n Narrow) (*Queue, error) {
 		return nil, err
 	}
 
-	var q Queue
-	err = json.Unmarshal(body, &q)
+	q := &Queue{bot: b}
+	err = json.Unmarshal(body, q)
 	if err != nil {
 		return nil, err
 	}
@@ -157,9 +158,9 @@ func (b *Bot) RegisterEvents(ets []EventType, n Narrow) (*Queue, error) {
 		q.LastEventID = q.MaxMessageID
 	}
 
-	b.Queues = append(b.Queues, &q)
+	b.Queues = append(b.Queues, q)
 
-	return &q, nil
+	return q, nil
 }
 
 func (b *Bot) RegisterAll() (*Queue, error) {
