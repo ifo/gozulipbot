@@ -29,9 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	evtResp := getEventsFromQueue(q)
-
-	messages, err := gzb.ParseEventMessages(evtResp.Bytes())
+	messages, err := q.GetEvents()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,26 +44,6 @@ func main() {
 			printResponse(resp.Body)
 		}
 	}
-}
-
-func getEventsFromQueue(q *gzb.Queue) bytes.Buffer {
-	resp, err := q.GetEvents()
-	if err != nil {
-		log.Fatal("get events from queue error: ", err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal("get events from queue error 2: ", err)
-	}
-
-	var out bytes.Buffer
-	err = json.Indent(&out, body, "", "  ")
-	if err != nil {
-		log.Fatal("get events from queue error 3: ", err)
-	}
-
-	return out
 }
 
 func printResponse(r io.ReadCloser) {
