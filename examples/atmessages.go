@@ -29,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	evtResp := getEventsFromQueue(bot, q.ID, q.LastEventID)
+	evtResp := getEventsFromQueue(q)
 
 	messages, err := gzb.ParseEventMessages(evtResp.Bytes())
 	if err != nil {
@@ -48,8 +48,8 @@ func main() {
 	}
 }
 
-func getEventsFromQueue(bot gzb.Bot, queueID string, lastMessageID int) bytes.Buffer {
-	resp, err := bot.GetEventsFromQueue(queueID, lastMessageID)
+func getEventsFromQueue(q *gzb.Queue) bytes.Buffer {
+	resp, err := q.GetEvents()
 	if err != nil {
 		log.Fatal("get events from queue error: ", err)
 	}

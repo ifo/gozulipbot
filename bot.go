@@ -204,24 +204,6 @@ func (b *Bot) RawRegisterEvents(ets []EventType, n Narrow) (*http.Response, erro
 	return b.client.Do(req)
 }
 
-// GetEventsFromQueue receives a list of events (a.k.a. received messages) since
-// the last message given.
-// Messages received in this queue will be EventMessages.
-func (b *Bot) GetEventsFromQueue(queueID string, lastMessageID int) (*http.Response, error) {
-	values := url.Values{}
-	values.Set("queue_id", queueID)
-	values.Set("last_event_id", strconv.Itoa(lastMessageID))
-
-	url := "events?" + values.Encode()
-
-	req, err := b.constructRequest("GET", url, "")
-	if err != nil {
-		return nil, err
-	}
-
-	return b.client.Do(req)
-}
-
 // constructRequest makes a zulip request and ensures the proper headers are set.
 func (b *Bot) constructRequest(method, endpoint, body string) (*http.Request, error) {
 	url := "https://api.zulip.com/v1/" + endpoint
@@ -234,4 +216,22 @@ func (b *Bot) constructRequest(method, endpoint, body string) (*http.Request, er
 	req.SetBasicAuth(b.Email, b.APIKey)
 
 	return req, nil
+}
+
+// GetEvents is a blocking call that receives a list of events
+// (a.k.a. received messages) since the last message id given.
+// Messages received in this queue will be EventMessages.
+func (q *Queue) GetEvents() (*http.Response, error) {
+	values := url.Values{}
+	values.Set("queue_id", q.ID)
+	values.Set("last_event_id", strconv.Itoa(q.LastEventID))
+
+	url := "events?" + values.Encode()
+
+	req, err := q.bot.constructRequest("GET", url, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return q.bot.client.Do(req)
 }
