@@ -23,20 +23,19 @@ func main() {
 
 	bot.Init()
 
-	streams := getStreamListNames(bot)
-
-	subscribeResp := subscribeToStreams(bot, streams)
-
-	fmt.Println(subscribeResp.String())
-}
-
-func getStreamListNames(bot gzb.Bot) []string {
-	list, err := bot.GetStreams()
+	streams, err := bot.GetStreams()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return list
+	// print the stream list
+	for _, s := range streams {
+		fmt.Println(s)
+	}
+
+	// subscribe
+	subResp := subscribeToStreams(bot, streams)
+	fmt.Println(subResp.String())
 }
 
 func subscribeToStreams(bot gzb.Bot, streams []string) bytes.Buffer {
