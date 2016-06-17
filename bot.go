@@ -101,9 +101,10 @@ func (b *Bot) Subscribe(streams []string) (*http.Response, error) {
 }
 
 // Unsubscribe will remove the bot from the given streams.
+// If no streams are given, nothing will happen and the function will error.
 func (b *Bot) Unsubscribe(streams []string) (*http.Response, error) {
-	if streams == nil {
-		streams = b.Streams
+	if len(streams) == 0 {
+		return nil, fmt.Errorf("No streams were provided")
 	}
 
 	body := `delete=["` + strings.Join(streams, `","`) + `"]`
