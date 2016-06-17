@@ -101,25 +101,14 @@ func (b *Bot) Subscribe(streams []string) (*http.Response, error) {
 }
 
 // Unsubscribe will remove the bot from the given streams.
-// TODO fix this, ensure working
 func (b *Bot) Unsubscribe(streams []string) (*http.Response, error) {
 	if streams == nil {
 		streams = b.Streams
 	}
 
-	var unsub []map[string]string
-	for _, name := range streams {
-		unsub = append(unsub, map[string]string{"name": name})
-	}
+	body := `delete=["` + strings.Join(streams, `","`) + `"]`
 
-	bodyBts, err := json.Marshal(unsub)
-	if err != nil {
-		return nil, err
-	}
-
-	body := "delete=" + string(bodyBts)
-
-	req, err := b.constructRequest("POST", "users/me/subscriptions", body)
+	req, err := b.constructRequest("PATCH", "users/me/subscriptions", body)
 	if err != nil {
 		return nil, err
 	}
