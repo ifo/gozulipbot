@@ -179,6 +179,8 @@ func (b *Bot) constructMessageRequest(m Message) (*http.Request, error) {
 	return b.constructRequest("POST", "messages", values.Encode())
 }
 
+var HeartbeatError = errors.New("EventMessage is a heartbeat")
+
 func ParseEventMessages(rawEventResponse []byte) ([]EventMessage, error) {
 	rawResponse := map[string]json.RawMessage{}
 	err := json.Unmarshal(rawEventResponse, &rawResponse)
@@ -194,9 +196,13 @@ func ParseEventMessages(rawEventResponse []byte) ([]EventMessage, error) {
 
 	messages := []EventMessage{}
 	for _, event := range events {
+		// if the event is a heartbeat, return a special error
+		if string(event["type"]) == `"heartbeat"` {
+			return nil, HeartbeatError
+		}
 		var msg EventMessage
 		err = json.Unmarshal(event["message"], &msg)
-		// TODO: determine if this check should be here
+		// TODO? should this check be here
 		if err != nil {
 			return nil, err
 		}

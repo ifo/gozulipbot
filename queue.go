@@ -16,6 +16,7 @@ type Queue struct {
 
 // GetEvents is a blocking call that waits for and parses a list of EventMessages.
 // There will usually only be one EventMessage returned.
+// When a heartbeat is returned, GetEvents will return a HeartbeatError
 func (q *Queue) GetEvents() ([]EventMessage, error) {
 	resp, err := q.RawGetEvents()
 	if err != nil {
