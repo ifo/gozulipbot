@@ -38,6 +38,7 @@ type EventMessage struct {
 	SubjectLinks     []interface{}    `json:"subject_links"`
 	Timestamp        int              `json:"timestamp"`
 	Type             string           `json:"type"`
+	Queue            *Queue           `json:"-"`
 }
 
 type DisplayRecipient struct {
@@ -90,7 +91,7 @@ func (b *Bot) Message(m Message) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return b.client.Do(req)
+	return b.Client.Do(req)
 }
 
 // PrivateMessage sends a message to the users in the message email slice.
@@ -103,7 +104,7 @@ func (b *Bot) PrivateMessage(m Message) (*http.Response, error) {
 		return nil, err
 	}
 
-	return b.client.Do(req)
+	return b.Client.Do(req)
 }
 
 // Respond sends a given message as a response to whatever context from which

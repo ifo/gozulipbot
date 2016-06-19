@@ -13,7 +13,7 @@ type Bot struct {
 	APIKey  string
 	Queues  []*Queue
 	Streams []string
-	client  Doer
+	Client  Doer
 }
 
 type Doer interface {
@@ -22,7 +22,7 @@ type Doer interface {
 
 // Init adds an http client to an existing bot struct.
 func (b *Bot) Init() *Bot {
-	b.client = &http.Client{}
+	b.Client = &http.Client{}
 	return b
 }
 
@@ -33,7 +33,7 @@ func (b *Bot) GetStreamList() (*http.Response, error) {
 		return nil, err
 	}
 
-	return b.client.Do(req)
+	return b.Client.Do(req)
 }
 
 type StreamJSON struct {
@@ -97,7 +97,7 @@ func (b *Bot) Subscribe(streams []string) (*http.Response, error) {
 		return nil, err
 	}
 
-	return b.client.Do(req)
+	return b.Client.Do(req)
 }
 
 // Unsubscribe will remove the bot from the given streams.
@@ -114,7 +114,7 @@ func (b *Bot) Unsubscribe(streams []string) (*http.Response, error) {
 		return nil, err
 	}
 
-	return b.client.Do(req)
+	return b.Client.Do(req)
 }
 
 func (b *Bot) ListSubscriptions() (*http.Response, error) {
@@ -123,7 +123,7 @@ func (b *Bot) ListSubscriptions() (*http.Response, error) {
 		return nil, err
 	}
 
-	return b.client.Do(req)
+	return b.Client.Do(req)
 }
 
 type EventType string
@@ -156,7 +156,7 @@ func (b *Bot) RegisterEvents(ets []EventType, n Narrow) (*Queue, error) {
 		return nil, err
 	}
 
-	q := &Queue{bot: b}
+	q := &Queue{Bot: b}
 	err = json.Unmarshal(body, q)
 	if err != nil {
 		return nil, err
@@ -209,7 +209,7 @@ func (b *Bot) RawRegisterEvents(ets []EventType, n Narrow) (*http.Response, erro
 		return nil, err
 	}
 
-	return b.client.Do(req)
+	return b.Client.Do(req)
 }
 
 // constructRequest makes a zulip request and ensures the proper headers are set.

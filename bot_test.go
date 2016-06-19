@@ -9,7 +9,7 @@ func TestBot_Init(t *testing.T) {
 	bot := Bot{}
 	bot.Init()
 
-	if bot.client == nil {
+	if bot.Client == nil {
 		t.Error("expected bot to have client")
 	}
 }
@@ -27,7 +27,7 @@ func getTestBot() *Bot {
 		Email:   "testbot@example.com",
 		APIKey:  "apikey",
 		Streams: []string{"stream a", "test bots"},
-		client:  &testClient{},
+		Client:  &testClient{},
 	}
 }
 

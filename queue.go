@@ -11,7 +11,7 @@ type Queue struct {
 	ID           string `json:"queue_id"`
 	LastEventID  int    `json:"last_event_id"`
 	MaxMessageID int    `json:"max_message_id"`
-	bot          *Bot   `json:"-"`
+	Bot          *Bot   `json:"-"`
 }
 
 // GetEvents is a blocking call that waits for and parses a list of EventMessages.
@@ -46,10 +46,10 @@ func (q *Queue) RawGetEvents() (*http.Response, error) {
 
 	url := "events?" + values.Encode()
 
-	req, err := q.bot.constructRequest("GET", url, "")
+	req, err := q.Bot.constructRequest("GET", url, "")
 	if err != nil {
 		return nil, err
 	}
 
-	return q.bot.client.Do(req)
+	return q.Bot.Client.Do(req)
 }
