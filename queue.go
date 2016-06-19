@@ -1,6 +1,8 @@
 package gozulipbot
 
 import (
+	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -12,6 +14,34 @@ type Queue struct {
 	LastEventID  int    `json:"last_event_id"`
 	MaxMessageID int    `json:"max_message_id"`
 	Bot          *Bot   `json:"-"`
+}
+
+// EventsCallback will repeatedly call provided callback function with
+// the output of continual queue.GetEvents calls.
+// It returns a function which can be called to end the calls.
+//
+// Note, it will never return a HeartbeatError.
+func (q *Queue) EventsCallback(fn func(EventMessage, error)) func() {
+	end := false
+	endFunc := func() {
+		end = true
+	}
+	go func() {
+		for {
+			if end {
+				return
+			}
+			ems, err := q.GetEvents()
+			if err == HeartbeatError {
+				continue
+			}
+			for _, em := range ems {
+				fn(em, err)
+			}
+		}
+	}()
+
+	return endFunc
 }
 
 // GetEvents is a blocking call that waits for and parses a list of EventMessages.
@@ -29,7 +59,7 @@ func (q *Queue) GetEvents() ([]EventMessage, error) {
 		return nil, err
 	}
 
-	msgs, err := ParseEventMessages(body)
+	msgs, err := q.ParseEventMessages(body)
 	if err != nil {
 		return nil, err
 	}
@@ -52,4 +82,38 @@ func (q *Queue) RawGetEvents() (*http.Response, error) {
 	}
 
 	return q.Bot.Client.Do(req)
+}
+
+var HeartbeatError = errors.New("EventMessage is a heartbeat")
+
+func (q *Queue) ParseEventMessages(rawEventResponse []byte) ([]EventMessage, error) {
+	rawResponse := map[string]json.RawMessage{}
+	err := json.Unmarshal(rawEventResponse, &rawResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	events := []map[string]json.RawMessage{}
+	err = json.Unmarshal(rawResponse["events"], &events)
+	if err != nil {
+		return nil, err
+	}
+
+	messages := []EventMessage{}
+	for _, event := range events {
+		// if the event is a heartbeat, return a special error
+		if string(event["type"]) == `"heartbeat"` {
+			return nil, HeartbeatError
+		}
+		var msg EventMessage
+		err = json.Unmarshal(event["message"], &msg)
+		// TODO? should this check be here
+		if err != nil {
+			return nil, err
+		}
+		msg.Queue = q
+		messages = append(messages, msg)
+	}
+
+	return messages, nil
 }
