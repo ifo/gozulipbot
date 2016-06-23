@@ -16,6 +16,33 @@ type Queue struct {
 	Bot          *Bot   `json:"-"`
 }
 
+func (q *Queue) EventsChan() (chan EventMessage, func()) {
+	end := false
+	endFunc := func() {
+		end = true
+	}
+
+	out := make(chan EventMessage)
+	go func() {
+		defer close(out)
+		for {
+			if end {
+				return
+			}
+			ems, err := q.GetEvents()
+			// TODO? do something with the error
+			if err != nil {
+				continue
+			}
+			for _, em := range ems {
+				out <- em
+			}
+		}
+	}()
+
+	return out, endFunc
+}
+
 // EventsCallback will repeatedly call provided callback function with
 // the output of continual queue.GetEvents calls.
 // It returns a function which can be called to end the calls.
