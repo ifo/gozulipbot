@@ -14,14 +14,6 @@ func TestBot_Init(t *testing.T) {
 	}
 }
 
-func TestMessage(t *testing.T) {
-	t.Skip()
-}
-
-func TestPrivateMessage(t *testing.T) {
-	t.Skip()
-}
-
 func getTestBot() *Bot {
 	return &Bot{
 		Email:   "testbot@example.com",
