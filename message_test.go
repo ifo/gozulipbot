@@ -22,7 +22,9 @@ func TestPrivateMessage(t *testing.T) {
 			Body: "content=hey&to=a%40example.com&type=private", E: nil},
 		"2": C{M: Message{Stream: "a", Topic: "a", Emails: []string{"a@example.com"}, Content: "hey"}, // topic is ignored
 			Body: "content=hey&to=a%40example.com&type=private", E: nil},
-		"3": C{M: Message{Stream: "a", Content: "hey"}, // no email set
+		"3": C{M: Message{Stream: "a", Topic: "a", Emails: []string{"a@example.com", "b@example.com"}, Content: "hey"}, // multiple emails are fine
+			Body: "content=hey&to=a%40example.com%2Cb%40example.com&type=private", E: nil},
+		"4": C{M: Message{Stream: "a", Content: "hey"}, // no email set
 			Body: "", E: errors.New("there must be at least one recipient")},
 	}
 

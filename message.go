@@ -161,10 +161,11 @@ func (b *Bot) constructMessageRequest(m Message) (*http.Request, error) {
 		to = m.Emails[0]
 	}
 	if le > 1 {
+		to = ""
 		for i, e := range m.Emails {
 			to += e
 			if i != le-1 {
-				to += ", "
+				to += ","
 			}
 		}
 	}
