@@ -183,6 +183,11 @@ func (b *Bot) RegisterPrivate() (*Queue, error) {
 	return b.RegisterEvents(nil, NarrowPrivate)
 }
 
+func (b *Bot) RegisterChannels() (*Queue, error) {
+	events := []EventType{Subscriptions}
+	return b.RegisterEvents(events, "")
+}
+
 // RawRegisterEvents tells Zulip to include message events in the bots events queue.
 // Passing nil as the slice of EventType will default to receiving Messages
 func (b *Bot) RawRegisterEvents(ets []EventType, n Narrow) (*http.Response, error) {
