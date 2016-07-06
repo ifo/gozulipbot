@@ -183,7 +183,7 @@ func (b *Bot) RegisterPrivate() (*Queue, error) {
 	return b.RegisterEvents(nil, NarrowPrivate)
 }
 
-func (b *Bot) RegisterChannels() (*Queue, error) {
+func (b *Bot) RegisterSubscriptions() (*Queue, error) {
 	events := []EventType{Subscriptions}
 	return b.RegisterEvents(events, "")
 }
