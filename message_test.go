@@ -32,11 +32,6 @@ func TestPrivateMessage(t *testing.T) {
 		// ignore response from testClient
 		_, err := bot.PrivateMessage(c.M)
 
-		// no error expected
-		if err != nil && c.E == nil {
-			t.Fatalf("got %q, expected nil, case %q", err, num)
-		}
-
 		// Check if error matches the error specified in the case
 		switch c.E {
 		case nil:
