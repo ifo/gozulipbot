@@ -53,9 +53,12 @@ func TestPrivateMessage(t *testing.T) {
 				t.Fatalf("got %q, expected %q, case %q", err, c.E, num)
 			}
 
+			// No request was created so the test has been completed and
+			// we won't check the request body, as there is none.
 			return
 		}
 
+		// Check the request body matches our expectation
 		body, _ := ioutil.ReadAll(bot.Client.(*testClient).Request.Body)
 		if string(body) != c.Body {
 			t.Errorf("got %q, expected %q, case %q", string(body), c.Body, num)
