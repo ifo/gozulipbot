@@ -32,20 +32,31 @@ func TestPrivateMessage(t *testing.T) {
 		// ignore response from testClient
 		_, err := bot.PrivateMessage(c.M)
 
+		// Check if error matches the error specified in the case
+		switch c.E {
+		case nil:
+			if err != nil && c.E == nil {
+				t.Fatalf("got %q, expected nil, case %q", err, num)
+			}
+
+		default:
+			if err == nil {
+				t.Fatalf("got nil, expected %q, case %q", err, c.E, num)
+			}
+
+			if err.Error() != c.E.Error() {
+				t.Fatalf("got %q, expected %q, case %q", err, c.E, num)
+			}
+
+			// No request was created so the test has been completed and
+			// we won't check the request body, as there is none.
+			return
+		}
+
+		// Check the request body matches our expectation
 		body, _ := ioutil.ReadAll(bot.Client.(*testClient).Request.Body)
 		if string(body) != c.Body {
 			t.Errorf("got %q, expected %q, case %q", string(body), c.Body, num)
-		}
-
-		// no error expected
-		if c.E == nil && err != nil {
-			t.Errorf("got %q, expected nil, case %q", err, num)
-		}
-		// error expected, prevent nil.Error() panic
-		if c.E != nil && err == nil {
-			t.Errorf("got nil, expected %q, case %q", err, c.E, num)
-		} else if c.E != nil && err.Error() != c.E.Error() {
-			t.Errorf("got %q, expected %q, case %q", err, c.E, num)
 		}
 	}
 }
