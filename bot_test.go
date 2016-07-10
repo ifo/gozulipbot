@@ -14,6 +14,43 @@ func TestBot_Init(t *testing.T) {
 	}
 }
 
+// ensure constructRequest adds a JSON header and uses basic auth
+func TestBot_constructRequest(t *testing.T) {
+	bot := getTestBot()
+	type Case struct {
+		Method   string
+		Endpoint string
+		Body     string
+		ReqBody  string
+		Error    error
+	}
+
+	JSONHeader := "application/x-www-form-urlencoded"
+
+	cases := map[string]Case{
+		"1": Case{"GET", "endpoint", "", "", nil},
+	}
+
+	for num, c := range cases {
+		req, err := bot.constructRequest(c.Method, c.Endpoint, c.Body)
+		if err != nil {
+			t.Fatalf("got %q, expected nil, case %q", err, num)
+		}
+
+		header := req.Header.Get("Content-Type")
+		if string(header) != JSONHeader {
+			t.Errorf("got %q, expected %q, case %q", header, JSONHeader, num)
+		}
+
+		email, key, ok := req.BasicAuth()
+		if !ok || email != bot.Email || key != bot.APIKey {
+			t.Errorf("got %t, expected true, case %q", ok, num)
+			t.Errorf("got %q, expected %q, case %q", email, bot.Email, num)
+			t.Errorf("got %q, expected %q, case %q", key, bot.APIKey, num)
+		}
+	}
+}
+
 func getTestBot() *Bot {
 	return &Bot{
 		Email:   "testbot@example.com",
