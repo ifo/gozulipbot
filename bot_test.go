@@ -14,6 +14,50 @@ func TestBot_Init(t *testing.T) {
 	}
 }
 
+func TestBot_GetStreamList(t *testing.T) {
+	t.Skip()
+}
+
+func TestBot_GetStreams(t *testing.T) {
+	t.Skip()
+}
+
+func TestBot_Subscribe(t *testing.T) {
+	t.Skip()
+}
+
+func TestBot_Unsubscribe(t *testing.T) {
+	t.Skip()
+}
+
+func TestBot_ListSubscriptions(t *testing.T) {
+	t.Skip()
+}
+
+func TestBot_RegisterEvents(t *testing.T) {
+	t.Skip()
+}
+
+func TestBot_RegisterAll(t *testing.T) {
+	t.Skip()
+}
+
+func TestBot_RegisterAt(t *testing.T) {
+	t.Skip()
+}
+
+func TestBot_RegisterPrivate(t *testing.T) {
+	t.Skip()
+}
+
+func TestBot_RegisterSubscriptions(t *testing.T) {
+	t.Skip()
+}
+
+func TestBot_RawRegisterEvents(t *testing.T) {
+	t.Skip()
+}
+
 // ensure constructRequest adds a JSON header and uses basic auth
 func TestBot_constructRequest(t *testing.T) {
 	bot := getTestBot()
