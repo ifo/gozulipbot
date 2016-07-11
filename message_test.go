@@ -6,11 +6,11 @@ import (
 	"testing"
 )
 
-func TestMessage(t *testing.T) {
+func TestBot_Message(t *testing.T) {
 	t.Skip()
 }
 
-func TestPrivateMessage(t *testing.T) {
+func TestBot_PrivateMessage(t *testing.T) {
 	bot := getTestBot()
 	type C struct {
 		M    Message
@@ -59,4 +59,16 @@ func TestPrivateMessage(t *testing.T) {
 			t.Errorf("got %q, expected %q, case %q", string(body), c.Body, num)
 		}
 	}
+}
+
+func TestBot_Respond(t *testing.T) {
+	t.Skip()
+}
+
+func TestBot_privateResponseList(t *testing.T) {
+	t.Skip()
+}
+
+func TestBot_constructMessageRequest(t *testing.T) {
+	t.Skip()
 }
