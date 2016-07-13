@@ -1,6 +1,7 @@
 package gozulipbot
 
 import (
+	"io/ioutil"
 	"net/http"
 	"testing"
 )
@@ -16,6 +17,33 @@ func TestBot_Init(t *testing.T) {
 
 func TestBot_GetStreamList(t *testing.T) {
 	t.Skip()
+	bot := getTestBot()
+	type Case struct {
+		URL   string
+		Error error
+	}
+
+	cases := map[string]Case{
+		"1": Case{URL: "https://api.zulip.com/v1/streams", Error: nil},
+	}
+
+	for num, c := range cases {
+		_, err := bot.GetStreamList()
+
+		if err != c.Error {
+			t.Fatalf("got %q, expected nil, case %q", err, num)
+		}
+
+		req := bot.Client.(*testClient).Request
+		if req.URL.String() != c.URL {
+			t.Errorf("got %q, expected %q, case %q", req.URL.String(), c.URL, num)
+		}
+
+		body, _ := ioutil.ReadAll(req.Body)
+		if string(body) != "" {
+			t.Errorf(`got %q, expected "", case %q`, string(body), num)
+		}
+	}
 }
 
 func TestBot_GetStreams(t *testing.T) {
