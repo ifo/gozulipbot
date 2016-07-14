@@ -140,3 +140,12 @@ func (t *testClient) Do(r *http.Request) (*http.Response, error) {
 	t.Request = r
 	return t.Response, nil
 }
+
+func isIn(needle string, haystack []string) bool {
+	for _, straw := range haystack {
+		if needle == straw {
+			return true
+		}
+	}
+	return false
+}
