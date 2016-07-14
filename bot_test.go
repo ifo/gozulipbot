@@ -16,7 +16,6 @@ func TestBot_Init(t *testing.T) {
 }
 
 func TestBot_GetStreamList(t *testing.T) {
-	t.Skip()
 	bot := getTestBot()
 	type Case struct {
 		URL   string
