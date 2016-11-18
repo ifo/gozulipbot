@@ -23,7 +23,7 @@ func TestBot_GetStreamList(t *testing.T) {
 	}
 
 	cases := map[string]Case{
-		"1": Case{URL: "https://api.zulip.com/v1/streams", Error: nil},
+		"1": Case{URL: "https://api.example.com/streams", Error: nil},
 	}
 
 	for num, c := range cases {
@@ -126,6 +126,7 @@ func getTestBot() *Bot {
 	return &Bot{
 		Email:   "testbot@example.com",
 		APIKey:  "apikey",
+		APIURL:  "https://api.example.com/",
 		Streams: []string{"stream a", "test bots"},
 		Client:  &testClient{},
 	}

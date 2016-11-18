@@ -12,16 +12,11 @@ import (
 )
 
 func main() {
-	emailAddress, apiKey, err := gzb.GetConfigFromFlags()
+	bot := gzb.Bot{Email: emailAddress}
+	err := bot.GetConfigFromFlags()
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	bot := gzb.Bot{
-		Email:  emailAddress,
-		APIKey: apiKey,
-	}
-
 	bot.Init()
 
 	q, err := bot.RegisterAt()

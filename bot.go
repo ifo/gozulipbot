@@ -9,8 +9,9 @@ import (
 )
 
 type Bot struct {
-	Email   string
 	APIKey  string
+	APIURL  string
+	Email   string
 	Queues  []*Queue
 	Streams []string
 	Client  Doer
@@ -219,7 +220,7 @@ func (b *Bot) RawRegisterEvents(ets []EventType, n Narrow) (*http.Response, erro
 
 // constructRequest makes a zulip request and ensures the proper headers are set.
 func (b *Bot) constructRequest(method, endpoint, body string) (*http.Request, error) {
-	url := "https://api.zulip.com/v1/" + endpoint
+	url := b.APIURL + endpoint
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
 		return nil, err
