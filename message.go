@@ -2,7 +2,6 @@ package gozulipbot
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -72,7 +71,7 @@ func (d *DisplayRecipient) UnmarshalJSON(b []byte) (err error) {
 // the message will be re-routed to the PrivateMessage function.
 func (b *Bot) Message(m Message) (*http.Response, error) {
 	if m.Content == "" {
-		return nil, errors.New("content cannot be empty")
+		return nil, fmt.Errorf("content cannot be empty")
 	}
 
 	// if any emails are set, this is a private message
@@ -82,10 +81,10 @@ func (b *Bot) Message(m Message) (*http.Response, error) {
 
 	// otherwise it's a stream message
 	if m.Stream == "" {
-		return nil, errors.New("stream cannot be empty")
+		return nil, fmt.Errorf("stream cannot be empty")
 	}
 	if m.Topic == "" {
-		return nil, errors.New("topic cannot be empty")
+		return nil, fmt.Errorf("topic cannot be empty")
 	}
 	req, err := b.constructMessageRequest(m)
 	if err != nil {
@@ -97,7 +96,7 @@ func (b *Bot) Message(m Message) (*http.Response, error) {
 // PrivateMessage sends a message to the users in the message email slice.
 func (b *Bot) PrivateMessage(m Message) (*http.Response, error) {
 	if len(m.Emails) == 0 {
-		return nil, errors.New("there must be at least one recipient")
+		return nil, fmt.Errorf("there must be at least one recipient")
 	}
 	req, err := b.constructMessageRequest(m)
 	if err != nil {
@@ -111,7 +110,7 @@ func (b *Bot) PrivateMessage(m Message) (*http.Response, error) {
 // an EventMessage was received.
 func (b *Bot) Respond(e EventMessage, response string) (*http.Response, error) {
 	if response == "" {
-		return nil, errors.New("Message response cannot be blank")
+		return nil, fmt.Errorf("Message response cannot be blank")
 	}
 	m := Message{
 		Stream:  e.DisplayRecipient.Topic,

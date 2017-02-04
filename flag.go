@@ -1,8 +1,8 @@
 package gozulipbot
 
 import (
-	"errors"
 	"flag"
+	"fmt"
 )
 
 func (b *Bot) GetConfigFromFlags() error {
@@ -14,13 +14,13 @@ func (b *Bot) GetConfigFromFlags() error {
 	flag.Parse()
 
 	if *apiKey == "" {
-		return errors.New("--apikey is required")
+		return fmt.Errorf("--apikey is required")
 	}
 	if *apiURL == "" {
-		return errors.New("--apiurl is required")
+		return fmt.Errorf("--apiurl is required")
 	}
 	if *email == "" {
-		return errors.New("--email is required")
+		return fmt.Errorf("--email is required")
 	}
 	b.APIKey = *apiKey
 	b.APIURL = *apiURL

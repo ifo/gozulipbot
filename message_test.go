@@ -1,7 +1,7 @@
 package gozulipbot
 
 import (
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"testing"
 )
@@ -25,7 +25,7 @@ func TestBot_PrivateMessage(t *testing.T) {
 		"3": C{M: Message{Stream: "a", Topic: "a", Emails: []string{"a@example.com", "b@example.com"}, Content: "hey"}, // multiple emails are fine
 			Body: "content=hey&to=a%40example.com%2Cb%40example.com&type=private", E: nil},
 		"4": C{M: Message{Stream: "a", Content: "hey"}, // no email set
-			Body: "", E: errors.New("there must be at least one recipient")},
+			Body: "", E: fmt.Errorf("there must be at least one recipient")},
 	}
 
 	for num, c := range cases {
