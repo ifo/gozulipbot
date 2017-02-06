@@ -38,14 +38,14 @@ func (b *Bot) GetStreamList() (*http.Response, error) {
 }
 
 type StreamJSON struct {
-	Msg     string `json:msg`
+	Msg     string `json:"msg"`
 	Streams []struct {
-		StreamID    int    `json:stream_id`
-		InviteOnly  bool   `json:invite_only`
-		Description string `json:description`
-		Name        string `json:name`
-	} `json:streams`
-	Result string `json:result`
+		StreamID    int    `json:"stream_id"`
+		InviteOnly  bool   `json:"invite_only"`
+		Description string `json:"description"`
+		Name        string `json:"name"`
+	} `json:"streams"`
+	Result string `json:"result"`
 }
 
 // GetStreams returns a list of all public streams

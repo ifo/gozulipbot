@@ -41,7 +41,7 @@ func TestBot_PrivateMessage(t *testing.T) {
 
 		default:
 			if err == nil {
-				t.Fatalf("got nil, expected %q, case %q", err, c.E, num)
+				t.Fatalf("got nil, expected %q, case %q", c.E, num)
 			}
 
 			if err.Error() != c.E.Error() {
