@@ -3,6 +3,7 @@ package gozulipbot
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 )
@@ -102,7 +103,6 @@ func (b *Bot) PrivateMessage(m Message) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return b.Client.Do(req)
 }
 
@@ -178,4 +178,74 @@ func (b *Bot) constructMessageRequest(m Message) (*http.Request, error) {
 	}
 
 	return b.constructRequest("POST", "messages", values.Encode())
+}
+
+// React adds an emoji reaction to an EventMessage.
+func (b *Bot) React(e EventMessage, emoji string) (*http.Response, error) {
+	url := fmt.Sprintf("messages/%d/emoji_reactions/%s", e.ID, emoji)
+	req, err := b.constructRequest("PUT", url, "")
+	if err != nil {
+		return nil, err
+	}
+	return b.Client.Do(req)
+}
+
+// Unreact removes an emoji reaction from an EventMessage.
+func (b *Bot) Unreact(e EventMessage, emoji string) (*http.Response, error) {
+	url := fmt.Sprintf("messages/%d/emoji_reactions/%s", e.ID, emoji)
+	req, err := b.constructRequest("DELETE", url, "")
+	if err != nil {
+		return nil, err
+	}
+	return b.Client.Do(req)
+}
+
+type Emoji struct {
+	Author     string `json:"author"`
+	DisplayURL string `json:"display_url"`
+	SourceURL  string `json:"source_url"`
+}
+
+type EmojiResponse struct {
+	Emoji  map[string]*Emoji `json:"emoji"`
+	Msg    string            `json:"msg"`
+	Result string            `json:"result"`
+}
+
+// RealmEmoji gets the custom emoji information for the Zulip instance.
+func (b *Bot) RealmEmoji() (map[string]*Emoji, error) {
+	req, err := b.constructRequest("GET", "realm/emoji", "")
+	if err != nil {
+		return nil, err
+	}
+	resp, err := b.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var emjResp EmojiResponse
+	err = json.Unmarshal(body, &emjResp)
+	if err != nil {
+		return nil, err
+	}
+	return emjResp.Emoji, nil
+}
+
+// RealmEmojiSet makes a set of the names of the custom emoji in the Zulip instance.
+func (b *Bot) RealmEmojiSet() (map[string]struct{}, error) {
+	emj, err := b.RealmEmoji()
+	if err != nil {
+		return nil, nil
+	}
+	out := map[string]struct{}{}
+	for k, _ := range emj {
+		out[k] = struct{}{}
+	}
+	return out, nil
 }
