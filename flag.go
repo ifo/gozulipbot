@@ -3,13 +3,15 @@ package gozulipbot
 import (
 	"flag"
 	"fmt"
+	"time"
 )
 
 func (b *Bot) GetConfigFromFlags() error {
 	var (
-		apiKey = flag.String("apikey", "", "bot api key")
-		apiURL = flag.String("apiurl", "", "url of zulip server")
-		email  = flag.String("email", "", "bot email address")
+		apiKey  = flag.String("apikey", "", "bot api key")
+		apiURL  = flag.String("apiurl", "", "url of zulip server")
+		email   = flag.String("email", "", "bot email address")
+		backoff = flag.Duration("backoff", 1*time.Second, "backoff base duration")
 	)
 	flag.Parse()
 
@@ -25,5 +27,6 @@ func (b *Bot) GetConfigFromFlags() error {
 	b.APIKey = *apiKey
 	b.APIURL = *apiURL
 	b.Email = *email
+	b.Backoff = *backoff
 	return nil
 }

@@ -2,11 +2,21 @@ package gozulipbot
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync/atomic"
+	"time"
+)
+
+var (
+	HeartbeatError    = fmt.Errorf("EventMessage is a heartbeat")
+	UnauthorizedError = fmt.Errorf("Request is unauthorized")
+	BackoffError      = fmt.Errorf("Too many requests")
+	UnknownError      = fmt.Errorf("Error was unknown")
 )
 
 type Queue struct {
@@ -26,13 +36,30 @@ func (q *Queue) EventsChan() (chan EventMessage, func()) {
 	go func() {
 		defer close(out)
 		for {
+			backoffTime := time.Now().Add(q.Bot.Backoff * time.Duration(math.Pow10(int(atomic.LoadInt64(&q.Bot.Retries)))))
+			minTime := time.Now().Add(q.Bot.Backoff)
 			if end {
 				return
 			}
 			ems, err := q.GetEvents()
-			// TODO? do something with the error
-			if err != nil {
+			switch {
+			case err == HeartbeatError:
+				time.Sleep(time.Until(minTime))
 				continue
+			case err == BackoffError:
+				time.Sleep(time.Until(backoffTime))
+				atomic.AddInt64(&q.Bot.Retries, 1)
+			case err == UnauthorizedError:
+				// TODO? have error channel when ending the continuously running process?
+				return
+			default:
+				// Reset the retries to 0
+				atomic.AddInt64(&q.Bot.Retries, -atomic.LoadInt64(&q.Bot.Retries))
+			}
+			if err != nil {
+				// TODO: handle unknown error
+				// For now, handle this like an UnauthorizedError and end the func.
+				return
 			}
 			for _, em := range ems {
 				out <- em
@@ -47,6 +74,7 @@ func (q *Queue) EventsChan() (chan EventMessage, func()) {
 // the output of continual queue.GetEvents calls.
 // It returns a function which can be called to end the calls.
 //
+// It will end early if it receives an UnauthorizedError, or an unknown error.
 // Note, it will never return a HeartbeatError.
 func (q *Queue) EventsCallback(fn func(EventMessage, error)) func() {
 	end := false
@@ -55,12 +83,30 @@ func (q *Queue) EventsCallback(fn func(EventMessage, error)) func() {
 	}
 	go func() {
 		for {
+			backoffTime := time.Now().Add(q.Bot.Backoff * time.Duration(math.Pow10(int(atomic.LoadInt64(&q.Bot.Retries)))))
+			minTime := time.Now().Add(q.Bot.Backoff)
 			if end {
 				return
 			}
 			ems, err := q.GetEvents()
-			if err == HeartbeatError {
+			switch {
+			case err == HeartbeatError:
+				time.Sleep(time.Until(minTime))
 				continue
+			case err == BackoffError:
+				time.Sleep(time.Until(backoffTime))
+				atomic.AddInt64(&q.Bot.Retries, 1)
+			case err == UnauthorizedError:
+				// TODO? have error channel when ending the continuously running process?
+				return
+			default:
+				// Reset the retries to 0
+				atomic.AddInt64(&q.Bot.Retries, -atomic.LoadInt64(&q.Bot.Retries))
+			}
+			if err != nil {
+				// TODO: handle unknown error
+				// For now, handle this like an UnauthorizedError and end the func.
+				return
 			}
 			for _, em := range ems {
 				fn(em, err)
@@ -73,13 +119,24 @@ func (q *Queue) EventsCallback(fn func(EventMessage, error)) func() {
 
 // GetEvents is a blocking call that waits for and parses a list of EventMessages.
 // There will usually only be one EventMessage returned.
-// When a heartbeat is returned, GetEvents will return a HeartbeatError
+// When a heartbeat is returned, GetEvents will return a HeartbeatError.
+// When an http status code above 400 is returned, one of a BackoffError,
+// UnauthorizedError, or UnknownError will be returned.
 func (q *Queue) GetEvents() ([]EventMessage, error) {
 	resp, err := q.RawGetEvents()
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	switch {
+	case resp.StatusCode == 429:
+		return nil, BackoffError
+	case resp.StatusCode == 403:
+		return nil, UnauthorizedError
+	case resp.StatusCode >= 400:
+		return nil, UnknownError
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -110,8 +167,6 @@ func (q *Queue) RawGetEvents() (*http.Response, error) {
 
 	return q.Bot.Client.Do(req)
 }
-
-var HeartbeatError = errors.New("EventMessage is a heartbeat")
 
 func (q *Queue) ParseEventMessages(rawEventResponse []byte) ([]EventMessage, error) {
 	rawResponse := map[string]json.RawMessage{}

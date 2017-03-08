@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type Bot struct {
@@ -15,6 +16,8 @@ type Bot struct {
 	Queues  []*Queue
 	Streams []string
 	Client  Doer
+	Backoff time.Duration
+	Retries int64
 }
 
 type Doer interface {
