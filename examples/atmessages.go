@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	bot := gzb.Bot{Email: emailAddress}
+	bot := gzb.Bot{}
 	err := bot.GetConfigFromFlags()
 	if err != nil {
 		log.Fatalln(err)
