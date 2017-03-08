@@ -53,8 +53,7 @@ func (q *Queue) EventsChan() (chan EventMessage, func()) {
 				// TODO? have error channel when ending the continuously running process?
 				return
 			default:
-				// Reset the retries to 0
-				atomic.AddInt64(&q.Bot.Retries, -atomic.LoadInt64(&q.Bot.Retries))
+				atomic.StoreInt64(&q.Bot.Retries, 0)
 			}
 			if err != nil {
 				// TODO: handle unknown error
@@ -64,6 +63,8 @@ func (q *Queue) EventsChan() (chan EventMessage, func()) {
 			for _, em := range ems {
 				out <- em
 			}
+			// Always make sure we wait the minimum time before asking again.
+			time.Sleep(time.Until(minTime))
 		}
 	}()
 
@@ -100,8 +101,7 @@ func (q *Queue) EventsCallback(fn func(EventMessage, error)) func() {
 				// TODO? have error channel when ending the continuously running process?
 				return
 			default:
-				// Reset the retries to 0
-				atomic.AddInt64(&q.Bot.Retries, -atomic.LoadInt64(&q.Bot.Retries))
+				atomic.StoreInt64(&q.Bot.Retries, 0)
 			}
 			if err != nil {
 				// TODO: handle unknown error
@@ -111,6 +111,8 @@ func (q *Queue) EventsCallback(fn func(EventMessage, error)) func() {
 			for _, em := range ems {
 				fn(em, err)
 			}
+			// Always make sure we wait the minimum time before asking again.
+			time.Sleep(time.Until(minTime))
 		}
 	}()
 
