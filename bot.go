@@ -166,10 +166,6 @@ func (b *Bot) RegisterEvents(ets []EventType, n Narrow) (*Queue, error) {
 		return nil, err
 	}
 
-	if q.LastEventID < q.MaxMessageID {
-		q.LastEventID = q.MaxMessageID
-	}
-
 	b.Queues = append(b.Queues, q)
 
 	return q, nil
