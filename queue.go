@@ -193,8 +193,10 @@ func (q *Queue) ParseEventMessages(rawEventResponse []byte) ([]EventMessage, err
 			newLastEventID = id
 		}
 
-		// if the event is a heartbeat, return a special error
+		// If the event is a heartbeat, there won't be any more events.
+		// So update the last event id and return a special error.
 		if string(event["type"]) == `"heartbeat"` {
+			q.LastEventID = newLastEventID
 			return nil, HeartbeatError
 		}
 		var msg EventMessage
